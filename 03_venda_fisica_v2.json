@@ -1,0 +1,568 @@
+{
+  "name": "03 - Venda Física (Formulario Externo)",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "venda-fisica",
+        "responseMode": "responseNode",
+        "options": {
+          "allowedOrigins": "*"
+        }
+      },
+      "id": "webhook-venda",
+      "name": "Webhook Venda",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [0, 0],
+      "webhookId": "venda-fisica"
+    },
+    {
+      "parameters": {
+        "operation": "read",
+        "documentId": {
+          "__rl": true,
+          "value": "1wdCErey73uXrPip46-OYawdqYSeb1SAXrgUeVZ5eKlY",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "ESTOQUE",
+          "mode": "list"
+        }
+      },
+      "id": "read-estoque",
+      "name": "Ler Estoque Aparelhos",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.4,
+      "position": [220, -100],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "vqwrhsrGxMPFn1Dq",
+          "name": "Google Sheets - Core"
+        }
+      },
+      "onError": "continueRegularOutput",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "operation": "read",
+        "documentId": {
+          "__rl": true,
+          "value": "1wdCErey73uXrPip46-OYawdqYSeb1SAXrgUeVZ5eKlY",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "ESTOQUE_ACESSORIOS",
+          "mode": "list"
+        }
+      },
+      "id": "read-acessorios",
+      "name": "Ler Estoque Acessorios",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.4,
+      "position": [220, 100],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "vqwrhsrGxMPFn1Dq",
+          "name": "Google Sheets - Core"
+        }
+      },
+      "onError": "continueRegularOutput",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combineBy": "combineAll",
+        "options": {}
+      },
+      "id": "merge-leituras",
+      "name": "Combinar Leituras",
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3,
+      "position": [440, 0]
+    },
+    {
+      "parameters": {
+        "jsCode": "// PROCESSAR VENDA FISICA - Entrada por codigo\n// Versao que busca produtos pelo codigo no estoque\n\nconst webhookData = $('Webhook Venda').first().json.body;\n\n// Obter dados das tabelas\nlet estoqueAparelhos = [];\nlet estoqueAcessorios = [];\n\ntry {\n  const estoqueItems = $('Ler Estoque Aparelhos').all();\n  if (estoqueItems && estoqueItems.length > 0) {\n    estoqueAparelhos = estoqueItems\n      .map((item, idx) => ({ ...item.json, _rowIndex: idx + 2 }))\n      .filter(item => item.COD && item.COD.toString().trim() !== '');\n  }\n} catch (e) {\n  estoqueAparelhos = [];\n}\n\ntry {\n  const acessoriosItems = $('Ler Estoque Acessorios').all();\n  if (acessoriosItems && acessoriosItems.length > 0) {\n    estoqueAcessorios = acessoriosItems\n      .map((item, idx) => ({ ...item.json, _rowIndex: idx + 2 }))\n      .filter(item => item.COD && item.COD.toString().trim() !== '');\n  }\n} catch (e) {\n  estoqueAcessorios = [];\n}\n\n// Dados do formulario\nconst dataVenda = webhookData.dataVenda;\nconst aparelhosInput = webhookData.aparelhos || [];\nconst acessoriosInput = webhookData.acessorios || [];\nconst pagamento1 = webhookData.pagamento1;\nconst pagamento2 = webhookData.pagamento2;\n\nif (!dataVenda) throw new Error('Data da venda obrigatoria');\nif (aparelhosInput.length === 0) throw new Error('Informe pelo menos um aparelho');\n\n// Tabela de taxas\nconst TAXAS = {\n  'Dinheiro': 0,\n  'PIX': 0.99,\n  'Debito': 1.69,\n  'Credito': {\n    1: 3.89, 2: 5.51, 3: 6.27, 4: 7.02, 5: 7.77, 6: 8.53,\n    7: 9.78, 8: 10.53, 9: 11.29, 10: 12.04, 11: 12.80, 12: 13.55,\n    13: 14.49, 14: 15.25, 15: 16.00, 16: 16.75, 17: 17.51, 18: 18.26\n  }\n};\n\nfunction calcularTaxa(forma, parcelas, valor) {\n  if (!forma || !valor) return 0;\n  const formaNorm = forma.normalize('NFD').replace(/[\\u0300-\\u036f]/g, '');\n  \n  if (formaNorm === 'Dinheiro') return 0;\n  if (formaNorm === 'PIX') return valor * (TAXAS.PIX / 100);\n  if (formaNorm === 'Debito') return valor * (TAXAS.Debito / 100);\n  if (formaNorm === 'Credito') {\n    const p = parseInt(parcelas) || 1;\n    const taxa = TAXAS.Credito[p] || TAXAS.Credito[1];\n    return valor * (taxa / 100);\n  }\n  return 0;\n}\n\n// Processar aparelhos\nconst aparelhosVendidos = [];\nconst linhasRemoverEstoque = [];\nlet custoTotalAparelhos = 0;\nlet precoTotalVenda = 0;\nconst resumoAparelhos = [];\n\nfor (const ap of aparelhosInput) {\n  const codigoBusca = ap.codigo?.trim().toUpperCase();\n  \n  if (!codigoBusca) {\n    throw new Error('Codigo do aparelho obrigatorio');\n  }\n  \n  // Buscar no estoque pelo codigo exato\n  const encontrado = estoqueAparelhos.find(item => \n    item.COD?.toString().toUpperCase() === codigoBusca &&\n    !linhasRemoverEstoque.includes(item._rowIndex)\n  );\n  \n  if (!encontrado) {\n    throw new Error('Aparelho ' + codigoBusca + ' nao encontrado no estoque ou ja vendido nesta operacao');\n  }\n  \n  const custo = parseFloat(encontrado.CUSTO) || 0;\n  const precoVenda = parseFloat(ap.precoVenda) || 0;\n  \n  if (precoVenda <= 0) {\n    throw new Error('Preco de venda invalido para ' + codigoBusca);\n  }\n  \n  linhasRemoverEstoque.push(encontrado._rowIndex);\n  custoTotalAparelhos += custo;\n  precoTotalVenda += precoVenda;\n  \n  aparelhosVendidos.push({\n    codigo: codigoBusca,\n    marca: encontrado.MARCA,\n    modelo: encontrado.VERSAO,\n    capacidade: encontrado.CAPACIDADE,\n    cor: encontrado.COR,\n    custo: custo,\n    precoVenda: precoVenda,\n    rowIndex: encontrado._rowIndex\n  });\n  \n  resumoAparelhos.push(encontrado.MARCA + ' ' + encontrado.VERSAO + ' (' + codigoBusca + ')');\n}\n\n// Processar acessorios (brindes)\nconst acessoriosVendidos = [];\nconst acessoriosParaAtualizar = [];\nlet custoTotalAcessorios = 0;\nconst resumoAcessorios = [];\n\nfor (const ac of acessoriosInput) {\n  const codigoBusca = ac.codigo?.trim().toUpperCase();\n  const quantidade = parseInt(ac.quantidade) || 1;\n  \n  if (!codigoBusca) continue; // Acessorio e opcional\n  \n  // Buscar no estoque de acessorios pelo codigo\n  const encontrado = estoqueAcessorios.find(item => \n    item.COD?.toString().toUpperCase() === codigoBusca\n  );\n  \n  if (!encontrado) {\n    throw new Error('Acessorio ' + codigoBusca + ' nao encontrado no estoque');\n  }\n  \n  const qtdDisponivel = parseInt(encontrado.QUANTIDADE) || 0;\n  if (qtdDisponivel < quantidade) {\n    throw new Error('Quantidade insuficiente de ' + codigoBusca + '. Disponivel: ' + qtdDisponivel);\n  }\n  \n  const custoUnitario = parseFloat(encontrado.CUSTO_UNITARIO) || 0;\n  const custoTotal = custoUnitario * quantidade;\n  custoTotalAcessorios += custoTotal;\n  \n  acessoriosVendidos.push({\n    codigo: codigoBusca,\n    tipo: encontrado.TIPO,\n    quantidade: quantidade,\n    custoUnitario: custoUnitario,\n    custoTotal: custoTotal,\n    rowIndex: encontrado._rowIndex,\n    qtdAtual: qtdDisponivel\n  });\n  \n  acessoriosParaAtualizar.push({\n    codigo: codigoBusca,\n    tipo: encontrado.TIPO,\n    novaQuantidade: qtdDisponivel - quantidade,\n    rowIndex: encontrado._rowIndex\n  });\n  \n  resumoAcessorios.push(quantidade + 'x ' + encontrado.TIPO + ' (' + codigoBusca + ')');\n}\n\n// Calcular taxas\nconst valor1 = parseFloat(pagamento1?.valor) || 0;\nconst taxa1 = calcularTaxa(pagamento1?.forma, pagamento1?.parcelas, valor1);\n\nconst valor2 = parseFloat(pagamento2?.valor) || 0;\nconst taxa2 = pagamento2 ? calcularTaxa(pagamento2?.forma, pagamento2?.parcelas, valor2) : 0;\n\nconst taxaTotal = taxa1 + taxa2;\nconst valorRecebido = valor1 + valor2;\n\n// Calcular lucro\nconst lucroVenda = precoTotalVenda - custoTotalAparelhos - custoTotalAcessorios - taxaTotal;\n\n// Formatar dados para a planilha VENDAS\n// Pegar dados do primeiro aparelho para os campos principais\nconst primeiroAparelho = aparelhosVendidos[0];\nconst primeiroAcessorio = acessoriosVendidos[0];\n\n// Se houver multiplos aparelhos, concatenar no campo de observacao\nconst todosAparelhosStr = resumoAparelhos.join(' | ');\nconst todosAcessoriosStr = resumoAcessorios.join(' | ');\n\nreturn {\n  // Dados da venda\n  dataVenda: dataVenda,\n  tipoVenda: 'FISICA',\n  \n  // Cliente (vazio para venda fisica)\n  clienteNome: '',\n  clienteCpf: '',\n  clienteTelefone: '',\n  clienteEndereco: '',\n  clienteCidade: '',\n  \n  // Aparelho principal (para compatibilidade com planilha)\n  aparelhoMarca: primeiroAparelho.marca,\n  aparelhoVersao: primeiroAparelho.modelo,\n  aparelhoCapacidade: primeiroAparelho.capacidade,\n  aparelhoCor: primeiroAparelho.cor,\n  custoAparelho: custoTotalAparelhos,\n  \n  // Acessorio\n  acessorioBrinde: primeiroAcessorio ? primeiroAcessorio.tipo : '',\n  custoAcessorio: custoTotalAcessorios,\n  \n  // Valores\n  precoVenda: precoTotalVenda,\n  \n  // Pagamento 1\n  forma1: pagamento1?.forma || '',\n  parcelas1: pagamento1?.parcelas || '',\n  valor1: valor1,\n  taxa1: taxa1,\n  \n  // Pagamento 2\n  forma2: pagamento2?.forma || '',\n  parcelas2: pagamento2?.parcelas || '',\n  valor2: valor2,\n  taxa2: taxa2,\n  \n  // Totais\n  taxaTotal: taxaTotal,\n  lucroVenda: lucroVenda,\n  pdfLink: '', // Venda fisica nao tem PDF\n  \n  // Dados para processamento interno\n  aparelhosVendidos: aparelhosVendidos,\n  linhasRemoverEstoque: linhasRemoverEstoque,\n  acessoriosParaAtualizar: acessoriosParaAtualizar,\n  \n  // Resumo\n  resumo: todosAparelhosStr + (todosAcessoriosStr ? ' + Brindes: ' + todosAcessoriosStr : ''),\n  totalAparelhos: aparelhosVendidos.length,\n  totalAcessorios: acessoriosVendidos.length\n};"
+      },
+      "id": "process-venda",
+      "name": "Processar Venda",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [660, 0]
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1wdCErey73uXrPip46-OYawdqYSeb1SAXrgUeVZ5eKlY",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "VENDAS",
+          "mode": "list"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "DATA_VENDA": "={{ $json.dataVenda }}",
+            "TIPO_VENDA": "={{ $json.tipoVenda }}",
+            "CLIENTE_NOME": "={{ $json.clienteNome }}",
+            "CLIENTE_CPF": "={{ $json.clienteCpf }}",
+            "CLIENTE_TELEFONE": "={{ $json.clienteTelefone }}",
+            "CLIENTE_ENDERECO": "={{ $json.clienteEndereco }}",
+            "CLIENTE_CIDADE": "={{ $json.clienteCidade }}",
+            "APARELHO_MARCA": "={{ $json.aparelhoMarca }}",
+            "APARELHO_VERSAO": "={{ $json.aparelhoVersao }}",
+            "APARELHO_CAPACIDADE": "={{ $json.aparelhoCapacidade }}",
+            "APARELHO_COR": "={{ $json.aparelhoCor }}",
+            "CUSTO_APARELHO": "={{ $json.custoAparelho }}",
+            "ACESSORIO_BRINDE": "={{ $json.acessorioBrinde }}",
+            "CUSTO_ACESSORIO": "={{ $json.custoAcessorio }}",
+            "PRECO_VENDA": "={{ $json.precoVenda }}",
+            "FORMA_PAGAMENTO_1": "={{ $json.forma1 }}",
+            "PARCELAS_1": "={{ $json.parcelas1 }}",
+            "VALOR_1": "={{ $json.valor1 }}",
+            "TAXA_1": "={{ $json.taxa1 }}",
+            "FORMA_PAGAMENTO_2": "={{ $json.forma2 }}",
+            "PARCELAS_2": "={{ $json.parcelas2 }}",
+            "VALOR_2": "={{ $json.valor2 }}",
+            "TAXA_2": "={{ $json.taxa2 }}",
+            "TAXA_TOTAL": "={{ $json.taxaTotal }}",
+            "LUCRO_VENDA": "={{ $json.lucroVenda }}",
+            "PDF_LINK": "={{ $json.pdfLink }}"
+          }
+        }
+      },
+      "id": "sheets-vendas",
+      "name": "Registrar Venda",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.4,
+      "position": [880, 0],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "vqwrhsrGxMPFn1Dq",
+          "name": "Google Sheets - Core"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Preparar linhas para deletar do estoque de APARELHOS\n// Ordenar decrescente para não bagunçar índices\nconst data = $('Processar Venda').first().json;\nconst linhas = data.linhasRemoverEstoque || [];\n\nif (linhas.length === 0) {\n  return [{ json: { skip: true } }];\n}\n\nconst items = linhas\n  .sort((a, b) => b - a)\n  .map(row => ({ json: { rowToDelete: row } }));\n\nreturn items;"
+      },
+      "id": "prepare-delete",
+      "name": "Preparar Deleção Aparelhos",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1100, -100]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "id": "skip-check",
+              "leftValue": "={{ $json.skip }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "notEquals"
+              }
+            }
+          ],
+          "combinator": "and"
+        }
+      },
+      "id": "if-tem-aparelhos",
+      "name": "Tem Aparelhos?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [1320, -100]
+    },
+    {
+      "parameters": {
+        "operation": "delete",
+        "documentId": {
+          "__rl": true,
+          "value": "1wdCErey73uXrPip46-OYawdqYSeb1SAXrgUeVZ5eKlY",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "ESTOQUE",
+          "mode": "list"
+        },
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "row_number",
+              "lookupValue": "={{ $json.rowToDelete }}"
+            }
+          ]
+        }
+      },
+      "id": "delete-estoque",
+      "name": "Deletar do Estoque",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.4,
+      "position": [1540, -200],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "vqwrhsrGxMPFn1Dq",
+          "name": "Google Sheets - Core"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "id": "noop-aparelhos",
+      "name": "Pular Deleção",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [1540, 0]
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combineBy": "combineAll",
+        "options": {}
+      },
+      "id": "merge-delete",
+      "name": "Após Deleção",
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3,
+      "position": [1760, -100]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Preparar atualizações de acessórios\nconst data = $('Processar Venda').first().json;\nconst acessorios = data.acessoriosParaAtualizar || [];\n\nif (acessorios.length === 0) {\n  return [{ json: { skip: true } }];\n}\n\nreturn acessorios.map(ac => ({ json: ac }));"
+      },
+      "id": "prepare-acessorios",
+      "name": "Preparar Atualização Acessórios",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1980, -100]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "id": "skip-check-ac",
+              "leftValue": "={{ $json.skip }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "notEquals"
+              }
+            }
+          ],
+          "combinator": "and"
+        }
+      },
+      "id": "if-tem-acessorios",
+      "name": "Tem Acessórios?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [2200, -100]
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "1wdCErey73uXrPip46-OYawdqYSeb1SAXrgUeVZ5eKlY",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "ESTOQUE_ACESSORIOS",
+          "mode": "list"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "COD": "={{ $json.codigo }}",
+            "QUANTIDADE": "={{ $json.novaQuantidade }}"
+          }
+        },
+        "options": {
+          "cellFormat": "USER_ENTERED"
+        }
+      },
+      "id": "update-acessorios",
+      "name": "Atualizar Quantidade Acessório",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.4,
+      "position": [2420, -200],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "vqwrhsrGxMPFn1Dq",
+          "name": "Google Sheets - Core"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "id": "noop-acessorios",
+      "name": "Pular Acessórios",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [2420, 0]
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combineBy": "combineAll",
+        "options": {}
+      },
+      "id": "merge-acessorios",
+      "name": "Após Acessórios",
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3,
+      "position": [2640, -100]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify({ success: true, message: 'Venda registrada com sucesso!', resumo: $('Processar Venda').first().json.resumo, totalAparelhos: $('Processar Venda').first().json.totalAparelhos, lucro: $('Processar Venda').first().json.lucroVenda }) }}"
+      },
+      "id": "response-ok",
+      "name": "Responder Sucesso",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [2860, -100]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify({ success: false, error: $json.error?.message || 'Erro ao processar venda' }) }}",
+        "options": {
+          "responseCode": 400
+        }
+      },
+      "id": "response-error",
+      "name": "Responder Erro",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [880, 200]
+    }
+  ],
+  "connections": {
+    "Webhook Venda": {
+      "main": [
+        [
+          {
+            "node": "Ler Estoque Aparelhos",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Ler Estoque Acessorios",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Ler Estoque Aparelhos": {
+      "main": [
+        [
+          {
+            "node": "Combinar Leituras",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Ler Estoque Acessorios": {
+      "main": [
+        [
+          {
+            "node": "Combinar Leituras",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Combinar Leituras": {
+      "main": [
+        [
+          {
+            "node": "Processar Venda",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Processar Venda": {
+      "main": [
+        [
+          {
+            "node": "Registrar Venda",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Registrar Venda": {
+      "main": [
+        [
+          {
+            "node": "Preparar Deleção Aparelhos",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Preparar Deleção Aparelhos": {
+      "main": [
+        [
+          {
+            "node": "Tem Aparelhos?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Tem Aparelhos?": {
+      "main": [
+        [
+          {
+            "node": "Deletar do Estoque",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Pular Deleção",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Deletar do Estoque": {
+      "main": [
+        [
+          {
+            "node": "Após Deleção",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Pular Deleção": {
+      "main": [
+        [
+          {
+            "node": "Após Deleção",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Após Deleção": {
+      "main": [
+        [
+          {
+            "node": "Preparar Atualização Acessórios",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Preparar Atualização Acessórios": {
+      "main": [
+        [
+          {
+            "node": "Tem Acessórios?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Tem Acessórios?": {
+      "main": [
+        [
+          {
+            "node": "Atualizar Quantidade Acessório",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Pular Acessórios",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Atualizar Quantidade Acessório": {
+      "main": [
+        [
+          {
+            "node": "Após Acessórios",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Pular Acessórios": {
+      "main": [
+        [
+          {
+            "node": "Após Acessórios",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Após Acessórios": {
+      "main": [
+        [
+          {
+            "node": "Responder Sucesso",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "tags": []
+}
