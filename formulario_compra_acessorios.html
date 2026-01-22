@@ -1,0 +1,634 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Core Distribuidora - Compra de Acessórios</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            color: #fff;
+        }
+        
+        .header h1 {
+            font-size: 28px;
+            margin-bottom: 10px;
+            color: #9b59b6;
+        }
+        
+        .header p {
+            color: #bdc3c7;
+        }
+        
+        .form-card {
+            background: #fff;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+        }
+        
+        .section-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #9b59b6;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: #34495e;
+        }
+        
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 15px;
+            transition: border-color 0.3s;
+        }
+        
+        .form-group input:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: #9b59b6;
+        }
+        
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+        
+        .acessorio-card {
+            background: #f8f9fa;
+            border: 2px solid #e0e0e0;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+            position: relative;
+        }
+        
+        .acessorio-card.novo {
+            border-color: #27ae60;
+            background: #f0fff4;
+        }
+        
+        .acessorio-card.codigo {
+            border-color: #9b59b6;
+            background: #f5f0ff;
+        }
+        
+        .acessorio-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        
+        .acessorio-number {
+            font-weight: 700;
+            font-size: 16px;
+            color: #2c3e50;
+        }
+        
+        .btn-remove {
+            background: #e74c3c;
+            color: #fff;
+            border: none;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background 0.3s;
+        }
+        
+        .btn-remove:hover {
+            background: #c0392b;
+        }
+        
+        .tipo-entrada {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+        
+        .tipo-btn {
+            flex: 1;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            background: #fff;
+            cursor: pointer;
+            text-align: center;
+            font-weight: 500;
+            transition: all 0.3s;
+        }
+        
+        .tipo-btn:hover {
+            border-color: #bdc3c7;
+        }
+        
+        .tipo-btn.active.codigo {
+            background: #9b59b6;
+            border-color: #9b59b6;
+            color: #fff;
+        }
+        
+        .tipo-btn.active.novo {
+            background: #27ae60;
+            border-color: #27ae60;
+            color: #fff;
+        }
+        
+        .campos-codigo,
+        .campos-novo {
+            display: none;
+        }
+        
+        .campos-codigo.show,
+        .campos-novo.show {
+            display: block;
+        }
+        
+        .btn-add {
+            background: #9b59b6;
+            color: #fff;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            width: 100%;
+            margin-bottom: 20px;
+            transition: background 0.3s;
+        }
+        
+        .btn-add:hover {
+            background: #8e44ad;
+        }
+        
+        .btn-submit {
+            background: #27ae60;
+            color: #fff;
+            border: none;
+            padding: 18px 40px;
+            border-radius: 10px;
+            font-size: 18px;
+            font-weight: 700;
+            cursor: pointer;
+            width: 100%;
+            transition: background 0.3s;
+        }
+        
+        .btn-submit:hover {
+            background: #219a52;
+        }
+        
+        .btn-submit:disabled {
+            background: #95a5a6;
+            cursor: not-allowed;
+        }
+        
+        .resumo {
+            background: #e8f6f3;
+            border: 2px solid #1abc9c;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .resumo-title {
+            color: #16a085;
+            font-weight: 600;
+            margin-bottom: 15px;
+        }
+        
+        .resumo-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px dashed #1abc9c;
+        }
+        
+        .resumo-total {
+            display: flex;
+            justify-content: space-between;
+            padding-top: 15px;
+            font-weight: 700;
+            font-size: 18px;
+            color: #16a085;
+        }
+        
+        .alert {
+            padding: 15px 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            display: none;
+        }
+        
+        .alert-success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        
+        .alert-error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 20px;
+        }
+        
+        .loading.show {
+            display: block;
+        }
+        
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid #e0e0e0;
+            border-top-color: #9b59b6;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 10px;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        @media (max-width: 600px) {
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+            
+            .tipo-entrada {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📦 Compra de Acessórios</h1>
+            <p>Core Distribuidora - Registro de Aquisição de Acessórios</p>
+        </div>
+        
+        <div class="form-card">
+            <div class="alert alert-success" id="alertSuccess"></div>
+            <div class="alert alert-error" id="alertError"></div>
+            
+            <form id="formCompra">
+                <div class="section-title">Data da Compra</div>
+                
+                <div class="form-group">
+                    <label>Data de Aquisicao *</label>
+                    <input type="date" id="dataAquisicao" required>
+                </div>
+                
+                <div class="section-title">Acessórios</div>
+                
+                <div id="acessoriosContainer"></div>
+                
+                <button type="button" class="btn-add" onclick="adicionarAcessorio()">
+                    + Adicionar Acessório
+                </button>
+                
+                <div class="resumo" id="resumo" style="display: none;">
+                    <div class="resumo-title">Resumo da Compra</div>
+                    <div id="resumoItens"></div>
+                    <div class="resumo-total">
+                        <span>TOTAL:</span>
+                        <span id="resumoTotal">R$ 0.00</span>
+                    </div>
+                </div>
+                
+                <div class="loading" id="loading">
+                    <div class="spinner"></div>
+                    <p>Registrando compra...</p>
+                </div>
+                
+                <button type="submit" class="btn-submit" id="btnSubmit">
+                    REGISTRAR COMPRA
+                </button>
+            </form>
+        </div>
+    </div>
+    
+    <script>
+        // URL do webhook - ALTERE PARA SUA URL
+        const WEBHOOK_URL = 'https://n8neditor.coofe.online/webhook/compra-acessorios';
+        
+        let acessorioCount = 0;
+        
+        // Lista de tipos de acessórios
+        const tiposAcessorios = [
+            'Fone com fio',
+            'Fone Bluetooth',
+            'Capinha',
+            'Película',
+            'Carregador',
+            'Cabo USB',
+            'Power Bank',
+            'Suporte Veicular',
+            'Caixa de Som',
+            'Smartwatch',
+            'Relogio',
+            'Outro'
+        ];
+        
+        // Inicializar com data de hoje
+        document.addEventListener('DOMContentLoaded', function() {
+            const hoje = new Date().toISOString().split('T')[0];
+            document.getElementById('dataAquisicao').value = hoje;
+            adicionarAcessorio();
+        });
+        
+        function adicionarAcessorio() {
+            acessorioCount++;
+            const container = document.getElementById('acessoriosContainer');
+            
+            const optionsTipo = tiposAcessorios.map(tipo => 
+                `<option value="${tipo}">${tipo}</option>`
+            ).join('');
+            
+            const html = `
+                <div class="acessorio-card" id="acessorio-${acessorioCount}" data-index="${acessorioCount}">
+                    <div class="acessorio-header">
+                        <span class="acessorio-number">Acessório #${acessorioCount}</span>
+                        ${acessorioCount > 1 ? `<button type="button" class="btn-remove" onclick="removerAcessorio(${acessorioCount})">×</button>` : ''}
+                    </div>
+                    
+                    <input type="hidden" id="tipo-${acessorioCount}" value="novo">
+                    
+                    <div class="tipo-entrada">
+                        <button type="button" class="tipo-btn codigo" onclick="selecionarTipo(${acessorioCount}, 'codigo')">
+                            Por CODIGO
+                        </button>
+                        <button type="button" class="tipo-btn novo active" onclick="selecionarTipo(${acessorioCount}, 'novo')">
+                            NOVO PRODUTO
+                        </button>
+                    </div>
+                    
+                    <div class="campos-codigo" id="campos-codigo-${acessorioCount}">
+                        <div class="form-group">
+                            <label>Codigo do Produto *</label>
+                            <input type="text" name="codigo-${acessorioCount}" id="codigo-${acessorioCount}" 
+                                   placeholder="Ex: AC001" oninput="atualizarResumo()" style="text-transform: uppercase;">
+                        </div>
+                    </div>
+                    
+                    <div class="campos-novo show" id="campos-novo-${acessorioCount}">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Tipo *</label>
+                                <select name="tipoAcessorio-${acessorioCount}" id="tipoAcessorio-${acessorioCount}" onchange="atualizarResumo()">
+                                    <option value="">Selecione...</option>
+                                    ${optionsTipo}
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>Descricao</label>
+                                <input type="text" name="descricao-${acessorioCount}" id="descricao-${acessorioCount}" 
+                                       placeholder="Ex: Capinha iPhone 15 Pro" oninput="atualizarResumo()">
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Quantidade *</label>
+                            <input type="number" name="quantidade-${acessorioCount}" id="quantidade-${acessorioCount}" 
+                                   min="1" value="1" required oninput="atualizarResumo()">
+                        </div>
+                        <div class="form-group">
+                            <label>Preco Total (R$) *</label>
+                            <input type="number" name="preco-${acessorioCount}" id="preco-${acessorioCount}" 
+                                   min="0" step="0.01" placeholder="0.00" required oninput="atualizarResumo()">
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            container.insertAdjacentHTML('beforeend', html);
+            atualizarResumo();
+        }
+        
+        function removerAcessorio(index) {
+            const acessorio = document.getElementById(`acessorio-${index}`);
+            if (acessorio) {
+                acessorio.remove();
+                atualizarResumo();
+            }
+        }
+        
+        function selecionarTipo(index, tipo) {
+            const card = document.getElementById(`acessorio-${index}`);
+            const btnCodigo = card.querySelector('.tipo-btn.codigo');
+            const btnNovo = card.querySelector('.tipo-btn.novo');
+            const camposCodigo = document.getElementById(`campos-codigo-${index}`);
+            const camposNovo = document.getElementById(`campos-novo-${index}`);
+            const inputTipo = document.getElementById(`tipo-${index}`);
+            
+            btnCodigo.classList.remove('active');
+            btnNovo.classList.remove('active');
+            card.classList.remove('codigo', 'novo');
+            
+            if (tipo === 'codigo') {
+                btnCodigo.classList.add('active');
+                card.classList.add('codigo');
+                camposCodigo.classList.add('show');
+                camposNovo.classList.remove('show');
+                inputTipo.value = 'codigo';
+            } else {
+                btnNovo.classList.add('active');
+                card.classList.add('novo');
+                camposCodigo.classList.remove('show');
+                camposNovo.classList.add('show');
+                inputTipo.value = 'novo';
+            }
+            
+            atualizarResumo();
+        }
+        
+        function atualizarResumo() {
+            const cards = document.querySelectorAll('.acessorio-card');
+            const resumoContainer = document.getElementById('resumo');
+            const resumoItens = document.getElementById('resumoItens');
+            const resumoTotal = document.getElementById('resumoTotal');
+            
+            let total = 0;
+            let html = '';
+            
+            cards.forEach((card) => {
+                const index = card.dataset.index;
+                const tipo = document.getElementById(`tipo-${index}`)?.value;
+                const quantidade = parseInt(document.getElementById(`quantidade-${index}`)?.value) || 0;
+                const preco = parseFloat(document.getElementById(`preco-${index}`)?.value) || 0;
+                
+                let descricao = '';
+                if (tipo === 'codigo') {
+                    const codigo = document.getElementById(`codigo-${index}`)?.value || '?';
+                    descricao = `Codigo: ${codigo}`;
+                } else {
+                    const tipoAcessorio = document.getElementById(`tipoAcessorio-${index}`)?.value || '?';
+                    const desc = document.getElementById(`descricao-${index}`)?.value || '';
+                    descricao = desc ? `${tipoAcessorio} - ${desc}` : tipoAcessorio;
+                }
+                
+                if (quantidade > 0 && preco > 0) {
+                    total += preco;
+                    html += `
+                        <div class="resumo-item">
+                            <span>${quantidade}x ${descricao}</span>
+                            <span>R$ ${preco.toFixed(2)}</span>
+                        </div>
+                    `;
+                }
+            });
+            
+            if (html) {
+                resumoContainer.style.display = 'block';
+                resumoItens.innerHTML = html;
+                resumoTotal.textContent = `R$ ${total.toFixed(2)}`;
+            } else {
+                resumoContainer.style.display = 'none';
+            }
+        }
+        
+        document.getElementById('formCompra').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const dataAquisicao = document.getElementById('dataAquisicao').value;
+            const cards = document.querySelectorAll('.acessorio-card');
+            const acessorios = [];
+            
+            cards.forEach(card => {
+                const index = card.dataset.index;
+                const tipo = document.getElementById(`tipo-${index}`)?.value;
+                const quantidade = parseInt(document.getElementById(`quantidade-${index}`)?.value) || 0;
+                const preco = parseFloat(document.getElementById(`preco-${index}`)?.value) || 0;
+                
+                if (quantidade > 0 && preco > 0) {
+                    const acessorio = {
+                        tipoEntrada: tipo,
+                        quantidade: quantidade,
+                        precoTotal: preco
+                    };
+                    
+                    if (tipo === 'codigo') {
+                        acessorio.codigo = document.getElementById(`codigo-${index}`)?.value?.trim().toUpperCase();
+                    } else {
+                        acessorio.tipoAcessorio = document.getElementById(`tipoAcessorio-${index}`)?.value;
+                        acessorio.descricao = document.getElementById(`descricao-${index}`)?.value || '';
+                    }
+                    
+                    acessorios.push(acessorio);
+                }
+            });
+            
+            if (acessorios.length === 0) {
+                alert('Adicione pelo menos um acessorio com quantidade e preco');
+                return;
+            }
+            
+            for (let i = 0; i < acessorios.length; i++) {
+                const ac = acessorios[i];
+                if (ac.tipoEntrada === 'codigo' && !ac.codigo) {
+                    alert(`Acessorio #${i+1}: Informe o codigo do produto`);
+                    return;
+                }
+                if (ac.tipoEntrada === 'novo' && !ac.tipoAcessorio) {
+                    alert(`Acessorio #${i+1}: Selecione o tipo do acessorio`);
+                    return;
+                }
+            }
+            
+            const payload = {
+                dataAquisicao: dataAquisicao,
+                acessorios: acessorios,
+                totalGeral: acessorios.reduce((sum, ac) => sum + ac.precoTotal, 0)
+            };
+            
+            document.getElementById('loading').classList.add('show');
+            document.getElementById('btnSubmit').disabled = true;
+            document.getElementById('alertSuccess').style.display = 'none';
+            document.getElementById('alertError').style.display = 'none';
+            
+            try {
+                const response = await fetch(WEBHOOK_URL, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(payload)
+                });
+                
+                const result = await response.json();
+                
+                if (response.ok && result.success) {
+                    document.getElementById('alertSuccess').style.display = 'block';
+                    document.getElementById('alertSuccess').textContent = result.message || 'Compra registrada com sucesso!';
+                    
+                    document.getElementById('acessoriosContainer').innerHTML = '';
+                    acessorioCount = 0;
+                    adicionarAcessorio();
+                    document.getElementById('resumo').style.display = 'none';
+                } else {
+                    throw new Error(result.error || 'Erro na resposta do servidor');
+                }
+            } catch (error) {
+                document.getElementById('alertError').style.display = 'block';
+                document.getElementById('alertError').textContent = 'Erro ao registrar: ' + error.message;
+            } finally {
+                document.getElementById('loading').classList.remove('show');
+                document.getElementById('btnSubmit').disabled = false;
+            }
+        });
+    </script>
+</body>
+</html>
