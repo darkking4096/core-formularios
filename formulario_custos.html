@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Core Distribuidora - Registro de Custos</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            color: #fff;
+        }
+        
+        .header h1 {
+            font-size: 28px;
+            margin-bottom: 10px;
+            color: #e74c3c;
+        }
+        
+        .header p {
+            color: #bdc3c7;
+        }
+        
+        .form-card {
+            background: #fff;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+        }
+        
+        .section-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #e74c3c;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: #34495e;
+        }
+        
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 15px;
+            transition: border-color 0.3s;
+        }
+        
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #e74c3c;
+        }
+        
+        .form-group textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+        
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+        
+        .categoria-cards {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+        }
+        
+        .categoria-card {
+            padding: 15px 10px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            background: #fff;
+        }
+        
+        .categoria-card:hover {
+            border-color: #e74c3c;
+            background: #fff5f5;
+        }
+        
+        .categoria-card.selected {
+            border-color: #e74c3c;
+            background: #e74c3c;
+            color: #fff;
+        }
+        
+        .categoria-card .icon {
+            font-size: 24px;
+            margin-bottom: 5px;
+        }
+        
+        .categoria-card .label {
+            font-size: 12px;
+            font-weight: 500;
+        }
+        
+        .btn-submit {
+            background: #27ae60;
+            color: #fff;
+            border: none;
+            padding: 18px 40px;
+            border-radius: 10px;
+            font-size: 18px;
+            font-weight: 700;
+            cursor: pointer;
+            width: 100%;
+            transition: background 0.3s;
+            margin-top: 10px;
+        }
+        
+        .btn-submit:hover {
+            background: #219a52;
+        }
+        
+        .btn-submit:disabled {
+            background: #95a5a6;
+            cursor: not-allowed;
+        }
+        
+        .alert {
+            padding: 15px 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            display: none;
+        }
+        
+        .alert-success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        
+        .alert-error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 20px;
+        }
+        
+        .loading.show {
+            display: block;
+        }
+        
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid #e0e0e0;
+            border-top-color: #e74c3c;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 10px;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        .periodo-info {
+            background: #fff3cd;
+            border: 1px solid #ffc107;
+            border-radius: 8px;
+            padding: 12px;
+            margin-top: 10px;
+            font-size: 14px;
+            color: #856404;
+            display: none;
+        }
+        
+        .periodo-info.show {
+            display: block;
+        }
+
+        @media (max-width: 600px) {
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+            
+            .categoria-cards {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>💰 Registro de Custos</h1>
+            <p>Core Distribuidora - Controle de Despesas</p>
+        </div>
+        
+        <div class="form-card">
+            <div class="alert alert-success" id="alertSuccess"></div>
+            <div class="alert alert-error" id="alertError"></div>
+            
+            <form id="formCusto">
+                <div class="section-title">Informações do Gasto</div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Data *</label>
+                        <input type="date" id="data" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Valor (R$) *</label>
+                        <input type="number" id="valor" min="0" step="0.01" placeholder="0.00" required>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label>Tipo de Gasto *</label>
+                    <select id="tipo" required>
+                        <option value="">Selecione...</option>
+                        <option value="ESTACIONAMENTO">Estacionamento</option>
+                        <option value="ALIMENTAÇÃO">Alimentação</option>
+                        <option value="GARANTIAS">Garantias</option>
+                        <option value="CONTABILIDADE">Contabilidade</option>
+                        <option value="INTERNET">Internet</option>
+                        <option value="LIMPEZA LOJA">Limpeza Loja</option>
+                        <option value="ALUGUEL">Aluguel</option>
+                        <option value="TAXAS BANCO">Taxas Banco</option>
+                        <option value="ENERGIA">Energia</option>
+                        <option value="CONDOMINIO">Condomínio</option>
+                        <option value="COMPRAS ITENS LIMPEZA">Compras Itens Limpeza</option>
+                        <option value="COMPRAS DIVERSAS">Compras Diversas</option>
+                        <option value="IMPOSTO">Imposto</option>
+                        <option value="FRETE MERCADORIAS">Frete Mercadorias</option>
+                        <option value="ENVIOS">Envios</option>
+                        <option value="SALARIO">Salário</option>
+                        <option value="RECARGA CELULAR">Recarga Celular</option>
+                        <option value="ENTREGAS">Entregas</option>
+                        <option value="TAXAS MAQUINA">Taxas Máquina</option>
+                        <option value="LEADS INSTA">Leads Insta</option>
+                        <option value="DESCARTES">Descartes</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label>Categoria *</label>
+                    <input type="hidden" id="categoria" value="">
+                    <div class="categoria-cards">
+                        <div class="categoria-card" data-value="Eventual" onclick="selecionarCategoria('Eventual')">
+                            <div class="icon">📌</div>
+                            <div class="label">Eventual</div>
+                        </div>
+                        <div class="categoria-card" data-value="Frequente" onclick="selecionarCategoria('Frequente')">
+                            <div class="icon">🔄</div>
+                            <div class="label">Frequente</div>
+                        </div>
+                        <div class="categoria-card" data-value="Semanal" onclick="selecionarCategoria('Semanal')">
+                            <div class="icon">📅</div>
+                            <div class="label">Semanal</div>
+                        </div>
+                        <div class="categoria-card" data-value="Mensal" onclick="selecionarCategoria('Mensal')">
+                            <div class="icon">🗓️</div>
+                            <div class="label">Mensal</div>
+                        </div>
+                    </div>
+                    <div class="periodo-info" id="periodoInfo">
+                        ⚠️ Para custos semanais e mensais, a data indica o período de referência <strong>anterior</strong>.
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label>Observação (opcional)</label>
+                    <textarea id="observacao" placeholder="Detalhes adicionais sobre o gasto..."></textarea>
+                </div>
+                
+                <div class="loading" id="loading">
+                    <div class="spinner"></div>
+                    <p>Registrando custo...</p>
+                </div>
+                
+                <button type="submit" class="btn-submit" id="btnSubmit">
+                    REGISTRAR CUSTO
+                </button>
+            </form>
+        </div>
+    </div>
+    
+    <script>
+        // URL do webhook - ALTERE PARA SUA URL
+        const WEBHOOK_URL = 'https://n8neditor.coofe.online/webhook/registro-custos';
+        
+        // Inicializar com data de hoje
+        document.addEventListener('DOMContentLoaded', function() {
+            const hoje = new Date().toISOString().split('T')[0];
+            document.getElementById('data').value = hoje;
+        });
+        
+        function selecionarCategoria(valor) {
+            // Remover seleção anterior
+            document.querySelectorAll('.categoria-card').forEach(card => {
+                card.classList.remove('selected');
+            });
+            
+            // Selecionar novo
+            const card = document.querySelector(`.categoria-card[data-value="${valor}"]`);
+            if (card) {
+                card.classList.add('selected');
+            }
+            
+            document.getElementById('categoria').value = valor;
+            
+            // Mostrar aviso para semanal/mensal
+            const periodoInfo = document.getElementById('periodoInfo');
+            if (valor === 'Semanal' || valor === 'Mensal') {
+                periodoInfo.classList.add('show');
+            } else {
+                periodoInfo.classList.remove('show');
+            }
+        }
+        
+        document.getElementById('formCusto').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const data = document.getElementById('data').value;
+            const tipo = document.getElementById('tipo').value;
+            const categoria = document.getElementById('categoria').value;
+            const valor = parseFloat(document.getElementById('valor').value) || 0;
+            const observacao = document.getElementById('observacao').value;
+            
+            // Validações
+            if (!data) {
+                alert('Informe a data');
+                return;
+            }
+            if (!tipo) {
+                alert('Selecione o tipo de gasto');
+                return;
+            }
+            if (!categoria) {
+                alert('Selecione a categoria');
+                return;
+            }
+            if (valor <= 0) {
+                alert('Informe um valor válido');
+                return;
+            }
+            
+            const payload = {
+                data: data,
+                tipo: tipo,
+                categoria: categoria,
+                valor: valor,
+                observacao: observacao
+            };
+            
+            document.getElementById('loading').classList.add('show');
+            document.getElementById('btnSubmit').disabled = true;
+            document.getElementById('alertSuccess').style.display = 'none';
+            document.getElementById('alertError').style.display = 'none';
+            
+            try {
+                const response = await fetch(WEBHOOK_URL, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(payload)
+                });
+                
+                const result = await response.json();
+                
+                if (response.ok && result.success) {
+                    document.getElementById('alertSuccess').style.display = 'block';
+                    document.getElementById('alertSuccess').textContent = result.message || 'Custo registrado com sucesso!';
+                    
+                    // Limpar formulário
+                    document.getElementById('tipo').value = '';
+                    document.getElementById('valor').value = '';
+                    document.getElementById('observacao').value = '';
+                    document.querySelectorAll('.categoria-card').forEach(c => c.classList.remove('selected'));
+                    document.getElementById('categoria').value = '';
+                    document.getElementById('periodoInfo').classList.remove('show');
+                } else {
+                    throw new Error(result.error || 'Erro na resposta do servidor');
+                }
+            } catch (error) {
+                document.getElementById('alertError').style.display = 'block';
+                document.getElementById('alertError').textContent = 'Erro ao registrar: ' + error.message;
+            } finally {
+                document.getElementById('loading').classList.remove('show');
+                document.getElementById('btnSubmit').disabled = false;
+            }
+        });
+    </script>
+</body>
+</html>
