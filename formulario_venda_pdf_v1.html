@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Core Distribuidora - Venda com Recibo PDF</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', Arial, sans-serif; background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%); min-height: 100vh; padding: 20px; }
+        .container { max-width: 900px; margin: 0 auto; }
+        h1 { color: #fff; text-align: center; margin-bottom: 20px; font-size: 1.8rem; }
+        h1 span { color: #e94560; }
+        .card { background: #fff; border-radius: 12px; padding: 25px; margin-bottom: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.2); }
+        .card-title { color: #1a1a2e; font-size: 1.1rem; font-weight: 600; margin-bottom: 15px; padding-bottom: 10px; border-bottom: 2px solid #e94560; }
+        .form-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 15px; }
+        .form-group { display: flex; flex-direction: column; }
+        .form-group.full { grid-column: 1 / -1; }
+        label { font-weight: 500; margin-bottom: 5px; color: #333; font-size: 0.9rem; }
+        input, select, textarea { padding: 10px 12px; border: 1px solid #ddd; border-radius: 6px; font-size: 1rem; transition: all 0.2s; }
+        input:focus, select:focus, textarea:focus { outline: none; border-color: #e94560; box-shadow: 0 0 0 3px rgba(233,69,96,0.1); }
+        textarea { resize: vertical; min-height: 80px; }
+        .item-container { background: #f8f9fa; border-radius: 8px; padding: 15px; margin-bottom: 10px; position: relative; border-left: 3px solid #e94560; }
+        .item-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+        .item-number { font-weight: 600; color: #e94560; }
+        .btn-remove { background: #dc3545; color: #fff; border: none; padding: 5px 12px; border-radius: 4px; cursor: pointer; font-size: 0.85rem; }
+        .btn-remove:hover { background: #c82333; }
+        .btn-add { background: #28a745; color: #fff; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; font-size: 0.95rem; display: flex; align-items: center; gap: 5px; margin-top: 10px; }
+        .btn-add:hover { background: #218838; }
+        .btn-submit { background: linear-gradient(135deg, #e94560, #c23a51); color: #fff; border: none; padding: 15px 40px; border-radius: 8px; font-size: 1.1rem; font-weight: 600; cursor: pointer; width: 100%; margin-top: 20px; transition: all 0.3s; }
+        .btn-submit:hover { transform: translateY(-2px); box-shadow: 0 4px 15px rgba(233,69,96,0.4); }
+        .btn-submit:disabled { background: #ccc; cursor: not-allowed; transform: none; }
+        .pagamento-section { background: #fff3cd; border-radius: 8px; padding: 15px; margin-bottom: 15px; }
+        .pagamento-section h4 { color: #856404; margin-bottom: 10px; }
+        .parcelas-container { display: none; }
+        .parcelas-container.show { display: block; }
+        .loading { display: none; text-align: center; padding: 20px; }
+        .loading.show { display: block; }
+        .loading-spinner { border: 4px solid #f3f3f3; border-top: 4px solid #e94560; border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; margin: 0 auto 10px; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        .result { display: none; padding: 20px; border-radius: 8px; margin-top: 20px; }
+        .result.success { display: block; background: #d4edda; color: #155724; }
+        .result.error { display: block; background: #f8d7da; color: #721c24; }
+        .result a { color: #155724; font-weight: bold; }
+        .info-box { background: #e7f3ff; border-left: 4px solid #0066cc; padding: 12px; margin-bottom: 15px; border-radius: 0 6px 6px 0; }
+        .info-box p { color: #0066cc; font-size: 0.9rem; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🧾 Venda com <span>Recibo PDF</span></h1>
+        
+        <form id="vendaForm">
+            <!-- Dados da Venda -->
+            <div class="card">
+                <div class="card-title">📅 Dados da Venda</div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Data da Venda *</label>
+                        <input type="date" name="dataVenda" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Vendedor *</label>
+                        <input type="text" name="vendedor" placeholder="Nome do vendedor" required>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Dados do Cliente -->
+            <div class="card">
+                <div class="card-title">👤 Dados do Cliente</div>
+                <div class="form-row">
+                    <div class="form-group" style="grid-column: span 2;">
+                        <label>Nome Completo *</label>
+                        <input type="text" name="clienteNome" placeholder="Nome completo do cliente" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Telefone *</label>
+                        <input type="tel" name="clienteTelefone" placeholder="(62) 99999-9999" required>
+                    </div>
+                    <div class="form-group">
+                        <label>CPF *</label>
+                        <input type="text" name="clienteCpf" placeholder="000.000.000-00" required>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group" style="grid-column: span 2;">
+                        <label>E-mail</label>
+                        <input type="email" name="clienteEmail" placeholder="email@exemplo.com">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group" style="grid-column: span 2;">
+                        <label>Endereço *</label>
+                        <input type="text" name="clienteEndereco" placeholder="Rua, número, bairro" required>
+                    </div>
+                    <div class="form-group">
+                        <label>CEP</label>
+                        <input type="text" name="clienteCep" placeholder="00000-000">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Cidade *</label>
+                        <input type="text" name="clienteCidade" placeholder="Goiânia" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Estado</label>
+                        <select name="clienteEstado">
+                            <option value="GO" selected>GO</option>
+                            <option value="DF">DF</option>
+                            <option value="MT">MT</option>
+                            <option value="MS">MS</option>
+                            <option value="TO">TO</option>
+                            <option value="SP">SP</option>
+                            <option value="MG">MG</option>
+                            <option value="BA">BA</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Aparelhos -->
+            <div class="card">
+                <div class="card-title">📱 Aparelhos</div>
+                <div class="info-box">
+                    <p>💡 Digite o código do aparelho conforme cadastrado no estoque (ex: AP001001)</p>
+                </div>
+                <div id="aparelhosContainer"></div>
+                <button type="button" class="btn-add" onclick="addAparelho()">+ Adicionar Aparelho</button>
+            </div>
+
+            <!-- Acessórios -->
+            <div class="card">
+                <div class="card-title">🎁 Acessórios (Brinde)</div>
+                <div id="acessoriosContainer"></div>
+                <button type="button" class="btn-add" onclick="addAcessorio()">+ Adicionar Acessório</button>
+            </div>
+
+            <!-- Pagamento -->
+            <div class="card">
+                <div class="card-title">💳 Pagamento</div>
+                
+                <div class="pagamento-section">
+                    <h4>Pagamento Principal</h4>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Forma de Pagamento *</label>
+                            <select name="pagamento1Forma" onchange="toggleParcelas(1)" required>
+                                <option value="">Selecione...</option>
+                                <option value="Dinheiro">Dinheiro</option>
+                                <option value="PIX">PIX</option>
+                                <option value="Debito">Débito</option>
+                                <option value="Credito">Crédito</option>
+                            </select>
+                        </div>
+                        <div class="form-group parcelas-container" id="parcelas1Container">
+                            <label>Parcelas</label>
+                            <select name="pagamento1Parcelas">
+                                <option value="1">1x</option>
+                                <option value="2">2x</option>
+                                <option value="3">3x</option>
+                                <option value="4">4x</option>
+                                <option value="5">5x</option>
+                                <option value="6">6x</option>
+                                <option value="7">7x</option>
+                                <option value="8">8x</option>
+                                <option value="9">9x</option>
+                                <option value="10">10x</option>
+                                <option value="11">11x</option>
+                                <option value="12">12x</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Valor (R$) *</label>
+                            <input type="number" name="pagamento1Valor" step="0.01" placeholder="0.00" required>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="pagamento-section" style="background: #e2e3e5;">
+                    <h4>Pagamento Secundário (Opcional)</h4>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Forma de Pagamento</label>
+                            <select name="pagamento2Forma" onchange="toggleParcelas(2)">
+                                <option value="">Nenhum</option>
+                                <option value="Dinheiro">Dinheiro</option>
+                                <option value="PIX">PIX</option>
+                                <option value="Debito">Débito</option>
+                                <option value="Credito">Crédito</option>
+                            </select>
+                        </div>
+                        <div class="form-group parcelas-container" id="parcelas2Container">
+                            <label>Parcelas</label>
+                            <select name="pagamento2Parcelas">
+                                <option value="1">1x</option>
+                                <option value="2">2x</option>
+                                <option value="3">3x</option>
+                                <option value="4">4x</option>
+                                <option value="5">5x</option>
+                                <option value="6">6x</option>
+                                <option value="7">7x</option>
+                                <option value="8">8x</option>
+                                <option value="9">9x</option>
+                                <option value="10">10x</option>
+                                <option value="11">11x</option>
+                                <option value="12">12x</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Valor (R$)</label>
+                            <input type="number" name="pagamento2Valor" step="0.01" placeholder="0.00">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Observação -->
+            <div class="card">
+                <div class="card-title">📝 Observação</div>
+                <div class="form-group full">
+                    <label>Observações (IMEI, detalhes, etc.)</label>
+                    <textarea name="observacao" placeholder="Ex: IMEI 864280083840945"></textarea>
+                </div>
+            </div>
+
+            <button type="submit" class="btn-submit" id="btnSubmit">🧾 REGISTRAR VENDA E GERAR PDF</button>
+        </form>
+
+        <div class="loading" id="loading">
+            <div class="loading-spinner"></div>
+            <p>Processando venda e gerando PDF...</p>
+        </div>
+
+        <div class="result" id="result"></div>
+    </div>
+
+    <script>
+        // CONFIGURAÇÃO - Altere a URL do webhook aqui
+        const WEBHOOK_URL = 'https://n8neditor.coofe.online/webhook/venda-pdf';
+
+        let aparelhoCount = 0;
+        let acessorioCount = 0;
+
+        // Inicialização
+        document.addEventListener('DOMContentLoaded', function() {
+            document.querySelector('[name="dataVenda"]').valueAsDate = new Date();
+            addAparelho();
+        });
+
+        function addAparelho() {
+            aparelhoCount++;
+            const container = document.getElementById('aparelhosContainer');
+            const div = document.createElement('div');
+            div.className = 'item-container';
+            div.id = `aparelho-${aparelhoCount}`;
+            div.innerHTML = `
+                <div class="item-header">
+                    <span class="item-number">Aparelho #${aparelhoCount}</span>
+                    ${aparelhoCount > 1 ? `<button type="button" class="btn-remove" onclick="removeItem('aparelho-${aparelhoCount}')">Remover</button>` : ''}
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Código do Aparelho *</label>
+                        <input type="text" name="aparelhoCodigo[]" placeholder="AP001001" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Preço de Venda (R$) *</label>
+                        <input type="number" name="aparelhoPreco[]" step="0.01" placeholder="999.00" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Desconto (R$)</label>
+                        <input type="number" name="aparelhoDesconto[]" step="0.01" placeholder="0.00" value="0">
+                    </div>
+                </div>
+            `;
+            container.appendChild(div);
+        }
+
+        function addAcessorio() {
+            acessorioCount++;
+            const container = document.getElementById('acessoriosContainer');
+            const div = document.createElement('div');
+            div.className = 'item-container';
+            div.id = `acessorio-${acessorioCount}`;
+            div.innerHTML = `
+                <div class="item-header">
+                    <span class="item-number">Acessório #${acessorioCount}</span>
+                    <button type="button" class="btn-remove" onclick="removeItem('acessorio-${acessorioCount}')">Remover</button>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Código do Acessório</label>
+                        <input type="text" name="acessorioCodigo[]" placeholder="AC001">
+                    </div>
+                    <div class="form-group">
+                        <label>Quantidade</label>
+                        <input type="number" name="acessorioQtd[]" min="1" value="1">
+                    </div>
+                </div>
+            `;
+            container.appendChild(div);
+        }
+
+        function removeItem(id) {
+            document.getElementById(id).remove();
+        }
+
+        function toggleParcelas(num) {
+            const forma = document.querySelector(`[name="pagamento${num}Forma"]`).value;
+            const container = document.getElementById(`parcelas${num}Container`);
+            if (forma === 'Credito') {
+                container.classList.add('show');
+            } else {
+                container.classList.remove('show');
+            }
+        }
+
+        // Enviar formulário
+        document.getElementById('vendaForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const form = e.target;
+            const btn = document.getElementById('btnSubmit');
+            const loading = document.getElementById('loading');
+            const result = document.getElementById('result');
+            
+            // Coletar dados
+            const aparelhos = [];
+            const codigos = form.querySelectorAll('[name="aparelhoCodigo[]"]');
+            const precos = form.querySelectorAll('[name="aparelhoPreco[]"]');
+            const descontos = form.querySelectorAll('[name="aparelhoDesconto[]"]');
+            
+            codigos.forEach((el, i) => {
+                if (el.value.trim()) {
+                    aparelhos.push({
+                        codigo: el.value.trim(),
+                        precoVenda: parseFloat(precos[i].value) || 0,
+                        desconto: parseFloat(descontos[i].value) || 0
+                    });
+                }
+            });
+
+            const acessorios = [];
+            const acCodigos = form.querySelectorAll('[name="acessorioCodigo[]"]');
+            const acQtds = form.querySelectorAll('[name="acessorioQtd[]"]');
+            
+            acCodigos.forEach((el, i) => {
+                if (el.value.trim()) {
+                    acessorios.push({
+                        codigo: el.value.trim(),
+                        quantidade: parseInt(acQtds[i].value) || 1
+                    });
+                }
+            });
+
+            const dados = {
+                dataVenda: form.dataVenda.value,
+                vendedor: form.vendedor.value.toUpperCase(),
+                cliente: {
+                    nome: form.clienteNome.value.toUpperCase(),
+                    telefone: form.clienteTelefone.value,
+                    cpf: form.clienteCpf.value,
+                    email: form.clienteEmail.value,
+                    endereco: form.clienteEndereco.value,
+                    cep: form.clienteCep.value,
+                    cidade: form.clienteCidade.value,
+                    estado: form.clienteEstado.value
+                },
+                aparelhos: aparelhos,
+                acessorios: acessorios,
+                pagamento1: {
+                    forma: form.pagamento1Forma.value,
+                    parcelas: form.pagamento1Parcelas.value,
+                    valor: parseFloat(form.pagamento1Valor.value) || 0
+                },
+                pagamento2: form.pagamento2Forma.value ? {
+                    forma: form.pagamento2Forma.value,
+                    parcelas: form.pagamento2Parcelas.value,
+                    valor: parseFloat(form.pagamento2Valor.value) || 0
+                } : null,
+                observacao: form.observacao.value
+            };
+
+            // Validações
+            if (aparelhos.length === 0) {
+                alert('Adicione pelo menos um aparelho!');
+                return;
+            }
+
+            // Enviar
+            btn.disabled = true;
+            loading.classList.add('show');
+            result.className = 'result';
+            result.style.display = 'none';
+
+            try {
+                const response = await fetch(WEBHOOK_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(dados)
+                });
+
+                const data = await response.json();
+                
+                if (data.success) {
+                    result.className = 'result success';
+                    let html = `<h3>✅ Venda registrada com sucesso!</h3>`;
+                    if (data.pdfLink) {
+                        html += `<p><a href="${data.pdfLink}" target="_blank">📄 Clique aqui para abrir o PDF do recibo</a></p>`;
+                    }
+                    if (data.debug) {
+                        html += `<p><small>Aparelhos removidos: ${data.debug.aparelhos?.join(', ') || 'N/A'}</small></p>`;
+                    }
+                    result.innerHTML = html;
+                    form.reset();
+                    document.querySelector('[name="dataVenda"]').valueAsDate = new Date();
+                } else {
+                    throw new Error(data.message || 'Erro desconhecido');
+                }
+            } catch (error) {
+                result.className = 'result error';
+                result.innerHTML = `<h3>❌ Erro ao processar venda</h3><p>${error.message}</p>`;
+            } finally {
+                btn.disabled = false;
+                loading.classList.remove('show');
+            }
+        });
+    </script>
+</body>
+</html>
