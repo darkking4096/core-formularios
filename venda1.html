@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Core Distribuidora - Venda Física</title>
+    <title>Core Distribuidora - Venda Fisica</title>
     <style>
         * {
             margin: 0;
@@ -95,7 +95,6 @@
             gap: 15px;
         }
         
-        /* Cards de itens */
         .item-card {
             background: #f8f9fa;
             border: 2px solid #3498db;
@@ -166,7 +165,6 @@
             color: #155724;
         }
         
-        /* Botões de adicionar */
         .btn-add {
             background: #3498db;
             color: #fff;
@@ -196,7 +194,6 @@
             background: #8e44ad;
         }
         
-        /* Seção de pagamento */
         .pagamento-card {
             background: #fff9e6;
             border: 2px solid #f39c12;
@@ -211,7 +208,6 @@
             margin-bottom: 15px;
         }
         
-        /* Resumo */
         .resumo {
             background: #2c3e50;
             border-radius: 12px;
@@ -260,7 +256,6 @@
             margin-top: 10px;
         }
         
-        /* Botão submit */
         .btn-submit {
             background: #27ae60;
             color: #fff;
@@ -284,7 +279,6 @@
             cursor: not-allowed;
         }
         
-        /* Alertas */
         .alert {
             padding: 15px 20px;
             border-radius: 8px;
@@ -304,7 +298,6 @@
             border: 1px solid #f5c6cb;
         }
         
-        /* Loading */
         .loading {
             display: none;
             text-align: center;
@@ -329,7 +322,6 @@
             to { transform: rotate(360deg); }
         }
         
-        /* Responsivo */
         @media (max-width: 600px) {
             .form-row, .form-row-3 {
                 grid-template-columns: 1fr;
@@ -340,8 +332,8 @@
 <body>
     <div class="container">
         <div class="header">
-            <h1>🛒 Venda Física</h1>
-            <p>Core Distribuidora - Venda Rápida (sem recibo)</p>
+            <h1>Venda Fisica</h1>
+            <p>Core Distribuidora - Venda Rapida (sem recibo)</p>
         </div>
         
         <div class="form-card">
@@ -349,17 +341,15 @@
             <div class="alert alert-error" id="alertError"></div>
             
             <form id="formVenda">
-                <!-- Data da Venda -->
-                <div class="section-title">📅 Data da Venda</div>
+                <div class="section-title">Data da Venda</div>
                 <div class="form-group">
                     <label>Data *</label>
                     <input type="date" id="dataVenda" required>
                 </div>
                 
-                <!-- Aparelhos -->
-                <div class="section-title">📱 Aparelhos</div>
+                <div class="section-title">Aparelhos</div>
                 <p style="color: #7f8c8d; margin-bottom: 15px; font-size: 14px;">
-                    Informe o código do produto que está no estoque (ex: AP001-001)
+                    Informe o codigo do produto que esta no estoque (ex: AP001-001)
                 </p>
                 
                 <div id="aparelhosContainer"></div>
@@ -368,23 +358,21 @@
                     <span>+</span> Adicionar Aparelho
                 </button>
                 
-                <!-- Acessórios Brinde -->
-                <div class="section-title">🎁 Acessórios Brinde (opcional)</div>
+                <div class="section-title">Acessorios Brinde (opcional)</div>
                 <p style="color: #7f8c8d; margin-bottom: 15px; font-size: 14px;">
-                    Informe o código do acessório se houver brinde (ex: AC001)
+                    Informe o codigo do acessorio se houver brinde (ex: AC001)
                 </p>
                 
                 <div id="acessoriosContainer"></div>
                 
                 <button type="button" class="btn-add acessorio" onclick="adicionarAcessorio()">
-                    <span>+</span> Adicionar Acessório Brinde
+                    <span>+</span> Adicionar Acessorio Brinde
                 </button>
                 
-                <!-- Pagamento -->
-                <div class="section-title">💳 Pagamento</div>
+                <div class="section-title">Pagamento</div>
                 
                 <div class="pagamento-card">
-                    <div class="pagamento-header">Pagamento 1 (obrigatório)</div>
+                    <div class="pagamento-header">Pagamento 1 (obrigatorio)</div>
                     <div class="form-row-3">
                         <div class="form-group">
                             <label>Forma de Pagamento *</label>
@@ -392,8 +380,8 @@
                                 <option value="">Selecione...</option>
                                 <option value="Dinheiro">Dinheiro</option>
                                 <option value="PIX">PIX</option>
-                                <option value="Débito">Débito</option>
-                                <option value="Crédito">Crédito</option>
+                                <option value="Debito">Debito</option>
+                                <option value="Credito">Credito</option>
                             </select>
                         </div>
                         <div class="form-group">
@@ -433,11 +421,11 @@
                         <div class="form-group">
                             <label>Forma de Pagamento</label>
                             <select id="forma2" onchange="calcularResumo()">
-                                <option value="">Não usar</option>
+                                <option value="">Nao usar</option>
                                 <option value="Dinheiro">Dinheiro</option>
                                 <option value="PIX">PIX</option>
-                                <option value="Débito">Débito</option>
-                                <option value="Crédito">Crédito</option>
+                                <option value="Debito">Debito</option>
+                                <option value="Credito">Credito</option>
                             </select>
                         </div>
                         <div class="form-group">
@@ -471,9 +459,8 @@
                     </div>
                 </div>
                 
-                <!-- Resumo -->
                 <div class="resumo" id="resumo" style="display: none;">
-                    <div class="resumo-title">📊 Resumo da Venda</div>
+                    <div class="resumo-title">Resumo da Venda</div>
                     <div id="resumoItens"></div>
                     <div class="resumo-total">
                         Total: <span id="resumoTotal">R$ 0,00</span>
@@ -488,46 +475,35 @@
                 </div>
                 
                 <button type="submit" class="btn-submit" id="btnSubmit">
-                    ✅ REGISTRAR VENDA
+                    REGISTRAR VENDA
                 </button>
             </form>
         </div>
     </div>
     
     <script>
-        // URL do webhook - ALTERE PARA SUA URL
         const WEBHOOK_URL = 'https://n8neditor.coofe.online/webhook/venda-fisica';
         
-        // Contadores
         let aparelhoCount = 0;
         let acessorioCount = 0;
         
-        // Cache de produtos encontrados (para não precisar validar novamente no submit)
-        const produtosValidados = {
-            aparelhos: {},
-            acessorios: {}
-        };
-        
-        // Tabela de taxas
         const TAXAS = {
             'Dinheiro': 0,
             'PIX': 0.99,
-            'Débito': 1.69,
-            'Crédito': {
+            'Debito': 1.69,
+            'Credito': {
                 1: 3.89, 2: 5.51, 3: 6.27, 4: 7.02, 5: 7.77, 6: 8.53,
                 7: 9.78, 8: 10.53, 9: 11.29, 10: 12.04, 11: 12.80, 12: 13.55,
                 13: 14.49, 14: 15.25, 15: 16.00, 16: 16.75, 17: 17.51, 18: 18.26
             }
         };
         
-        // Inicializar
         document.addEventListener('DOMContentLoaded', function() {
             const hoje = new Date().toISOString().split('T')[0];
             document.getElementById('dataVenda').value = hoje;
             adicionarAparelho();
         });
         
-        // Adicionar aparelho
         function adicionarAparelho() {
             aparelhoCount++;
             const container = document.getElementById('aparelhosContainer');
@@ -535,42 +511,38 @@
             const html = `
                 <div class="item-card" id="aparelho-${aparelhoCount}" data-index="${aparelhoCount}">
                     <div class="item-header">
-                        <span class="item-number">📱 Aparelho #${aparelhoCount}</span>
-                        ${aparelhoCount > 1 ? `<button type="button" class="btn-remove" onclick="removerAparelho(${aparelhoCount})">×</button>` : ''}
+                        <span class="item-number">Aparelho #${aparelhoCount}</span>
+                        ${aparelhoCount > 1 ? `<button type="button" class="btn-remove" onclick="removerAparelho(${aparelhoCount})">x</button>` : ''}
                     </div>
                     <div class="form-row">
                         <div class="form-group">
-                            <label>Código do Produto *</label>
+                            <label>Codigo do Produto *</label>
                             <input type="text" id="codAparelho-${aparelhoCount}" 
                                    placeholder="Ex: AP001-001" 
-                                   oninput="this.value = this.value.toUpperCase(); buscarProduto(${aparelhoCount}, 'aparelho')"
+                                   oninput="this.value = this.value.toUpperCase()"
                                    style="text-transform: uppercase;">
                         </div>
                         <div class="form-group">
-                            <label>Preço de Venda (R$) *</label>
+                            <label>Preco de Venda (R$) *</label>
                             <input type="number" id="precoAparelho-${aparelhoCount}" 
                                    min="0" step="0.01" placeholder="0.00"
                                    oninput="calcularResumo()">
                         </div>
                     </div>
-                    <div class="produto-info" id="infoAparelho-${aparelhoCount}"></div>
                 </div>
             `;
             
             container.insertAdjacentHTML('beforeend', html);
         }
         
-        // Remover aparelho
         function removerAparelho(index) {
             const el = document.getElementById(`aparelho-${index}`);
             if (el) {
-                delete produtosValidados.aparelhos[index];
                 el.remove();
                 calcularResumo();
             }
         }
         
-        // Adicionar acessório
         function adicionarAcessorio() {
             acessorioCount++;
             const container = document.getElementById('acessoriosContainer');
@@ -578,15 +550,15 @@
             const html = `
                 <div class="item-card acessorio" id="acessorio-${acessorioCount}" data-index="${acessorioCount}">
                     <div class="item-header">
-                        <span class="item-number">🎁 Acessório #${acessorioCount}</span>
-                        <button type="button" class="btn-remove" onclick="removerAcessorio(${acessorioCount})">×</button>
+                        <span class="item-number">Acessorio #${acessorioCount}</span>
+                        <button type="button" class="btn-remove" onclick="removerAcessorio(${acessorioCount})">x</button>
                     </div>
                     <div class="form-row">
                         <div class="form-group">
-                            <label>Código do Acessório</label>
+                            <label>Codigo do Acessorio</label>
                             <input type="text" id="codAcessorio-${acessorioCount}" 
                                    placeholder="Ex: AC001" 
-                                   oninput="this.value = this.value.toUpperCase(); buscarProduto(${acessorioCount}, 'acessorio')"
+                                   oninput="this.value = this.value.toUpperCase()"
                                    style="text-transform: uppercase;">
                         </div>
                         <div class="form-group">
@@ -596,91 +568,34 @@
                                    oninput="calcularResumo()">
                         </div>
                     </div>
-                    <div class="produto-info" id="infoAcessorio-${acessorioCount}"></div>
                 </div>
             `;
             
             container.insertAdjacentHTML('beforeend', html);
         }
         
-        // Remover acessório
         function removerAcessorio(index) {
             const el = document.getElementById(`acessorio-${index}`);
             if (el) {
-                delete produtosValidados.acessorios[index];
                 el.remove();
                 calcularResumo();
             }
         }
         
-        // Buscar produto (simulado - a validação real será no backend)
-        // Esta função apenas mostra feedback visual
-        function buscarProduto(index, tipo) {
-            const inputId = tipo === 'aparelho' ? `codAparelho-${index}` : `codAcessorio-${index}`;
-            const infoId = tipo === 'aparelho' ? `infoAparelho-${index}` : `infoAcessorio-${index}`;
-            
-            const codigo = document.getElementById(inputId).value.trim().toUpperCase();
-            const infoDiv = document.getElementById(infoId);
-            
-            if (!codigo) {
-                infoDiv.classList.remove('show', 'success', 'error');
-                if (tipo === 'aparelho') {
-                    delete produtosValidados.aparelhos[index];
-                } else {
-                    delete produtosValidados.acessorios[index];
-                }
-                calcularResumo();
-                return;
-            }
-            
-            // Mostrar que o código será validado no servidor
-            if (tipo === 'aparelho') {
-                // Formato esperado: AP001-001
-                if (codigo.match(/^AP\d{3}-\d{3}$/)) {
-                    infoDiv.innerHTML = `<strong>${codigo}</strong> - Será validado ao enviar`;
-                    infoDiv.classList.remove('error');
-                    infoDiv.classList.add('show');
-                    produtosValidados.aparelhos[index] = { codigo: codigo };
-                } else {
-                    infoDiv.innerHTML = `⚠️ Formato esperado: AP001-001`;
-                    infoDiv.classList.remove('success');
-                    infoDiv.classList.add('show', 'error');
-                    delete produtosValidados.aparelhos[index];
-                }
-            } else {
-                // Formato esperado: AC001
-                if (codigo.match(/^AC\d{3}$/)) {
-                    infoDiv.innerHTML = `<strong>${codigo}</strong> - Será validado ao enviar`;
-                    infoDiv.classList.remove('error');
-                    infoDiv.classList.add('show');
-                    produtosValidados.acessorios[index] = { codigo: codigo };
-                } else {
-                    infoDiv.innerHTML = `⚠️ Formato esperado: AC001`;
-                    infoDiv.classList.remove('success');
-                    infoDiv.classList.add('show', 'error');
-                    delete produtosValidados.acessorios[index];
-                }
-            }
-            
-            calcularResumo();
-        }
-        
-        // Calcular taxa
         function calcularTaxa(forma, parcelas, valor) {
             if (!forma || !valor) return 0;
             
             if (forma === 'Dinheiro') return 0;
             if (forma === 'PIX') return valor * (TAXAS.PIX / 100);
-            if (forma === 'Débito') return valor * (TAXAS['Débito'] / 100);
-            if (forma === 'Crédito') {
+            if (forma === 'Debito') return valor * (TAXAS['Debito'] / 100);
+            if (forma === 'Credito') {
                 const p = parseInt(parcelas) || 1;
-                const taxa = TAXAS.Crédito[p] || TAXAS.Crédito[1];
+                const taxa = TAXAS.Credito[p] || TAXAS.Credito[1];
                 return valor * (taxa / 100);
             }
             return 0;
         }
         
-        // Calcular resumo
         function calcularResumo() {
             const resumoDiv = document.getElementById('resumo');
             const resumoItens = document.getElementById('resumoItens');
@@ -690,9 +605,7 @@
             
             let html = '';
             let totalVenda = 0;
-            let custoEstimado = 0;
             
-            // Aparelhos
             document.querySelectorAll('[id^="aparelho-"]').forEach(card => {
                 const index = card.dataset.index;
                 const codigo = document.getElementById(`codAparelho-${index}`)?.value?.trim().toUpperCase() || '';
@@ -702,14 +615,13 @@
                     totalVenda += preco;
                     html += `
                         <div class="resumo-item">
-                            <span>📱 ${codigo}</span>
+                            <span>${codigo}</span>
                             <span>R$ ${preco.toFixed(2)}</span>
                         </div>
                     `;
                 }
             });
             
-            // Acessórios (brinde - não adiciona ao total, mas contabiliza custo)
             document.querySelectorAll('[id^="acessorio-"]').forEach(card => {
                 const index = card.dataset.index;
                 const codigo = document.getElementById(`codAcessorio-${index}`)?.value?.trim().toUpperCase() || '';
@@ -718,14 +630,13 @@
                 if (codigo) {
                     html += `
                         <div class="resumo-item">
-                            <span>🎁 ${codigo} (${qtd}x brinde)</span>
+                            <span>${codigo} (${qtd}x brinde)</span>
                             <span>-</span>
                         </div>
                     `;
                 }
             });
             
-            // Pagamentos
             const forma1 = document.getElementById('forma1').value;
             const parcelas1 = document.getElementById('parcelas1').value;
             const valor1 = parseFloat(document.getElementById('valor1').value) || 0;
@@ -739,7 +650,6 @@
             const taxaTotal = taxa1 + taxa2;
             const valorRecebido = valor1 + valor2;
             
-            // Atualizar opacidade do pagamento 2
             const pag2Card = document.getElementById('pagamento2Card');
             pag2Card.style.opacity = forma2 ? '1' : '0.7';
             
@@ -749,26 +659,23 @@
                 resumoTotal.textContent = `R$ ${totalVenda.toFixed(2)}`;
                 
                 if (taxaTotal > 0) {
-                    resumoTaxas.innerHTML = `Taxa cartão: -R$ ${taxaTotal.toFixed(2)}`;
+                    resumoTaxas.innerHTML = `Taxa cartao: -R$ ${taxaTotal.toFixed(2)}`;
                 } else {
                     resumoTaxas.innerHTML = '';
                 }
                 
-                // Lucro estimado (sem custo real, que virá do estoque)
                 const lucroEstimado = valorRecebido - taxaTotal;
-                resumoLucro.innerHTML = `Valor líquido: R$ ${lucroEstimado.toFixed(2)}`;
+                resumoLucro.innerHTML = `Valor liquido: R$ ${lucroEstimado.toFixed(2)}`;
             } else {
                 resumoDiv.style.display = 'none';
             }
         }
         
-        // Submit
         document.getElementById('formVenda').addEventListener('submit', async function(e) {
             e.preventDefault();
             
             const dataVenda = document.getElementById('dataVenda').value;
             
-            // Coletar aparelhos
             const aparelhos = [];
             document.querySelectorAll('[id^="aparelho-"]').forEach(card => {
                 const index = card.dataset.index;
@@ -783,13 +690,11 @@
                 }
             });
             
-            // Validar aparelhos
             if (aparelhos.length === 0) {
-                alert('Adicione pelo menos um aparelho com código e preço');
+                alert('Adicione pelo menos um aparelho com codigo e preco');
                 return;
             }
             
-            // Coletar acessórios
             const acessorios = [];
             document.querySelectorAll('[id^="acessorio-"]').forEach(card => {
                 const index = card.dataset.index;
@@ -804,7 +709,6 @@
                 }
             });
             
-            // Pagamento
             const forma1 = document.getElementById('forma1').value;
             const parcelas1 = document.getElementById('parcelas1').value;
             const valor1 = parseFloat(document.getElementById('valor1').value) || 0;
@@ -818,17 +722,16 @@
                 return;
             }
             
-            if (forma1 === 'Crédito' && !parcelas1) {
-                alert('Selecione o número de parcelas para crédito');
+            if (forma1 === 'Credito' && !parcelas1) {
+                alert('Selecione o numero de parcelas para credito');
                 return;
             }
             
-            if (forma2 === 'Crédito' && !parcelas2) {
-                alert('Selecione o número de parcelas para crédito (pagamento 2)');
+            if (forma2 === 'Credito' && !parcelas2) {
+                alert('Selecione o numero de parcelas para credito (pagamento 2)');
                 return;
             }
             
-            // Montar payload
             const payload = {
                 dataVenda: dataVenda,
                 aparelhos: aparelhos,
@@ -845,7 +748,6 @@
                 } : null
             };
             
-            // Enviar
             document.getElementById('loading').classList.add('show');
             document.getElementById('btnSubmit').disabled = true;
             document.getElementById('alertSuccess').style.display = 'none';
@@ -866,7 +768,6 @@
                     document.getElementById('alertSuccess').style.display = 'block';
                     document.getElementById('alertSuccess').textContent = result.message || 'Venda registrada com sucesso!';
                     
-                    // Limpar formulário
                     document.getElementById('aparelhosContainer').innerHTML = '';
                     document.getElementById('acessoriosContainer').innerHTML = '';
                     aparelhoCount = 0;
@@ -882,7 +783,6 @@
                     
                     document.getElementById('resumo').style.display = 'none';
                     
-                    // Scroll para o topo
                     window.scrollTo({ top: 0, behavior: 'smooth' });
                 } else {
                     throw new Error(result.error || result.message || 'Erro ao processar venda');
