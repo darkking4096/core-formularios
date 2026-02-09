@@ -5,312 +5,51 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Core Distribuidora - Compra de Aparelhos</title>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
-            min-height: 100vh;
-            padding: 20px;
-        }
-        
-        .container {
-            max-width: 800px;
-            margin: 0 auto;
-        }
-        
-        .header {
-            text-align: center;
-            margin-bottom: 30px;
-            color: #fff;
-        }
-        
-        .header h1 {
-            font-size: 28px;
-            margin-bottom: 10px;
-            color: #f39c12;
-        }
-        
-        .header p {
-            color: #bdc3c7;
-        }
-        
-        .form-card {
-            background: #fff;
-            border-radius: 15px;
-            padding: 30px;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
-        }
-        
-        .section-title {
-            font-size: 18px;
-            font-weight: 600;
-            color: #2c3e50;
-            margin-bottom: 20px;
-            padding-bottom: 10px;
-            border-bottom: 2px solid #f39c12;
-        }
-        
-        .form-group {
-            margin-bottom: 20px;
-        }
-        
-        .form-group label {
-            display: block;
-            margin-bottom: 8px;
-            font-weight: 500;
-            color: #34495e;
-        }
-        
-        .form-group input,
-        .form-group select {
-            width: 100%;
-            padding: 12px 15px;
-            border: 2px solid #e0e0e0;
-            border-radius: 8px;
-            font-size: 15px;
-            transition: border-color 0.3s;
-        }
-        
-        .form-group input:focus,
-        .form-group select:focus {
-            outline: none;
-            border-color: #f39c12;
-        }
-        
-        .form-row {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 15px;
-        }
-        
-        .aparelho-card {
-            background: #f8f9fa;
-            border: 2px solid #e0e0e0;
-            border-radius: 12px;
-            padding: 20px;
-            margin-bottom: 20px;
-            position: relative;
-        }
-        
-        .aparelho-card.novo {
-            border-color: #27ae60;
-            background: #f0fff4;
-        }
-        
-        .aparelho-card.codigo {
-            border-color: #3498db;
-            background: #f0f8ff;
-        }
-        
-        .aparelho-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 15px;
-        }
-        
-        .aparelho-number {
-            font-weight: 700;
-            font-size: 16px;
-            color: #2c3e50;
-        }
-        
-        .btn-remove {
-            background: #e74c3c;
-            color: #fff;
-            border: none;
-            width: 32px;
-            height: 32px;
-            border-radius: 50%;
-            cursor: pointer;
-            font-size: 18px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: background 0.3s;
-        }
-        
-        .btn-remove:hover {
-            background: #c0392b;
-        }
-        
-        .tipo-entrada {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 15px;
-        }
-        
-        .tipo-btn {
-            flex: 1;
-            padding: 12px;
-            border: 2px solid #e0e0e0;
-            border-radius: 8px;
-            background: #fff;
-            cursor: pointer;
-            text-align: center;
-            font-weight: 500;
-            transition: all 0.3s;
-        }
-        
-        .tipo-btn:hover {
-            border-color: #bdc3c7;
-        }
-        
-        .tipo-btn.active.codigo {
-            background: #3498db;
-            border-color: #3498db;
-            color: #fff;
-        }
-        
-        .tipo-btn.active.novo {
-            background: #27ae60;
-            border-color: #27ae60;
-            color: #fff;
-        }
-        
-        .campos-codigo,
-        .campos-novo {
-            display: none;
-        }
-        
-        .campos-codigo.show,
-        .campos-novo.show {
-            display: block;
-        }
-        
-        .btn-add {
-            background: #f39c12;
-            color: #fff;
-            border: none;
-            padding: 15px 30px;
-            border-radius: 8px;
-            font-size: 16px;
-            font-weight: 600;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
-            width: 100%;
-            margin-bottom: 20px;
-            transition: background 0.3s;
-        }
-        
-        .btn-add:hover {
-            background: #e67e22;
-        }
-        
-        .btn-submit {
-            background: #27ae60;
-            color: #fff;
-            border: none;
-            padding: 18px 40px;
-            border-radius: 10px;
-            font-size: 18px;
-            font-weight: 700;
-            cursor: pointer;
-            width: 100%;
-            transition: background 0.3s;
-        }
-        
-        .btn-submit:hover {
-            background: #219a52;
-        }
-        
-        .btn-submit:disabled {
-            background: #bdc3c7;
-            cursor: not-allowed;
-        }
-        
-        .resumo {
-            background: #2c3e50;
-            color: #fff;
-            padding: 20px;
-            border-radius: 10px;
-            margin-top: 20px;
-            margin-bottom: 20px;
-        }
-        
-        .resumo h3 {
-            margin-bottom: 15px;
-            color: #f39c12;
-        }
-        
-        .resumo-item {
-            display: flex;
-            justify-content: space-between;
-            padding: 8px 0;
-            border-bottom: 1px solid #34495e;
-        }
-        
-        .resumo-total {
-            font-size: 20px;
-            font-weight: 700;
-            margin-top: 15px;
-            padding-top: 15px;
-            border-top: 2px solid #f39c12;
-            display: flex;
-            justify-content: space-between;
-        }
-        
-        .alert {
-            padding: 15px 20px;
-            border-radius: 8px;
-            margin-bottom: 20px;
-            display: none;
-        }
-        
-        .alert-success {
-            background: #d4edda;
-            color: #155724;
-            border: 1px solid #c3e6cb;
-        }
-        
-        .alert-error {
-            background: #f8d7da;
-            color: #721c24;
-            border: 1px solid #f5c6cb;
-        }
-        
-        .loading {
-            display: none;
-            text-align: center;
-            padding: 20px;
-        }
-        
-        .loading.show {
-            display: block;
-        }
-        
-        .spinner {
-            border: 4px solid #f3f3f3;
-            border-top: 4px solid #f39c12;
-            border-radius: 50%;
-            width: 40px;
-            height: 40px;
-            animation: spin 1s linear infinite;
-            margin: 0 auto 15px;
-        }
-        
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-        
-        @media (max-width: 600px) {
-            .form-row {
-                grid-template-columns: 1fr;
-            }
-            
-            .tipo-entrada {
-                flex-direction: column;
-            }
-        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%); min-height: 100vh; padding: 20px; }
+        .container { max-width: 800px; margin: 0 auto; }
+        .header { text-align: center; margin-bottom: 30px; color: #fff; }
+        .header h1 { font-size: 28px; margin-bottom: 10px; color: #f39c12; }
+        .header p { color: #bdc3c7; }
+        .form-card { background: #fff; border-radius: 15px; padding: 30px; box-shadow: 0 10px 40px rgba(0,0,0,0.3); }
+        .section-title { font-size: 18px; font-weight: 600; color: #2c3e50; margin-bottom: 20px; padding-bottom: 10px; border-bottom: 2px solid #f39c12; }
+        .form-group { margin-bottom: 20px; }
+        .form-group label { display: block; margin-bottom: 8px; font-weight: 500; color: #34495e; }
+        .form-group input, .form-group select { width: 100%; padding: 12px 15px; border: 2px solid #e0e0e0; border-radius: 8px; font-size: 15px; transition: border-color 0.3s; }
+        .form-group input:focus, .form-group select:focus { outline: none; border-color: #f39c12; }
+        .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+        .aparelho-card { background: #f8f9fa; border: 2px solid #e0e0e0; border-radius: 12px; padding: 20px; margin-bottom: 20px; position: relative; }
+        .aparelho-card.novo { border-color: #27ae60; background: #f0fff4; }
+        .aparelho-card.codigo { border-color: #3498db; background: #f0f8ff; }
+        .aparelho-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
+        .aparelho-number { font-weight: 700; font-size: 16px; color: #2c3e50; }
+        .btn-remove { background: #e74c3c; color: #fff; border: none; width: 32px; height: 32px; border-radius: 50%; cursor: pointer; font-size: 18px; display: flex; align-items: center; justify-content: center; transition: background 0.3s; }
+        .btn-remove:hover { background: #c0392b; }
+        .tipo-entrada { display: flex; gap: 10px; margin-bottom: 15px; }
+        .tipo-btn { flex: 1; padding: 12px; border: 2px solid #e0e0e0; border-radius: 8px; background: #fff; cursor: pointer; text-align: center; font-weight: 500; transition: all 0.3s; }
+        .tipo-btn:hover { border-color: #bdc3c7; }
+        .tipo-btn.active.codigo { background: #3498db; border-color: #3498db; color: #fff; }
+        .tipo-btn.active.novo { background: #27ae60; border-color: #27ae60; color: #fff; }
+        .campos-codigo, .campos-novo { display: none; }
+        .campos-codigo.show, .campos-novo.show { display: block; }
+        .btn-add { background: #f39c12; color: #fff; border: none; padding: 15px 30px; border-radius: 8px; font-size: 16px; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px; width: 100%; margin-bottom: 20px; transition: background 0.3s; }
+        .btn-add:hover { background: #e67e22; }
+        .btn-submit { background: #27ae60; color: #fff; border: none; padding: 18px 40px; border-radius: 10px; font-size: 18px; font-weight: 700; cursor: pointer; width: 100%; transition: background 0.3s; }
+        .btn-submit:hover { background: #219a52; }
+        .btn-submit:disabled { background: #bdc3c7; cursor: not-allowed; }
+        .resumo { background: #2c3e50; color: #fff; padding: 20px; border-radius: 10px; margin-top: 20px; margin-bottom: 20px; }
+        .resumo h3 { margin-bottom: 15px; color: #f39c12; }
+        .resumo-item { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #34495e; font-size: 14px; }
+        .resumo-item .detail { color: #bdc3c7; }
+        .resumo-total { font-size: 20px; font-weight: 700; margin-top: 15px; padding-top: 15px; border-top: 2px solid #f39c12; display: flex; justify-content: space-between; }
+        .alert { padding: 15px 20px; border-radius: 8px; margin-bottom: 20px; display: none; }
+        .alert-success { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .alert-error { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+        .loading { display: none; text-align: center; padding: 20px; }
+        .loading.show { display: block; }
+        .spinner { border: 4px solid #f3f3f3; border-top: 4px solid #f39c12; border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; margin: 0 auto 15px; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        @media (max-width: 600px) { .form-row { grid-template-columns: 1fr; } .tipo-entrada { flex-direction: column; } }
     </style>
 </head>
 <body>
@@ -319,26 +58,20 @@
             <h1>Core Distribuidora Eletronicos</h1>
             <p>Registro de Compra de Aparelhos</p>
         </div>
-        
         <div class="form-card">
             <div class="alert alert-success" id="alertSuccess"></div>
             <div class="alert alert-error" id="alertError"></div>
-            
             <form id="formCompra">
                 <div class="section-title">Data da Compra</div>
                 <div class="form-group">
                     <label for="dataAquisicao">Data de Aquisicao *</label>
                     <input type="date" id="dataAquisicao" required>
                 </div>
-                
                 <div class="section-title">Aparelhos</div>
-                
                 <div id="aparelhosContainer"></div>
-                
                 <button type="button" class="btn-add" onclick="adicionarAparelho()">
                     <span style="font-size: 24px;">+</span> Adicionar Aparelho
                 </button>
-                
                 <div class="resumo" id="resumo" style="display: none;">
                     <h3>Resumo da Compra</h3>
                     <div id="resumoItens"></div>
@@ -347,60 +80,43 @@
                         <span id="resumoTotal">R$ 0,00</span>
                     </div>
                 </div>
-                
                 <div class="loading" id="loading">
                     <div class="spinner"></div>
                     <p>Enviando dados...</p>
                 </div>
-                
-                <button type="submit" class="btn-submit" id="btnSubmit">
-                    REGISTRAR COMPRA
-                </button>
+                <button type="submit" class="btn-submit" id="btnSubmit">REGISTRAR COMPRA</button>
             </form>
         </div>
     </div>
-    
     <script>
-        // URL do Webhook N8N
         const WEBHOOK_URL = 'https://n8neditor.coofe.online/webhook/compra-aparelhos';
-        
         let aparelhoCount = 0;
-        
+
         document.addEventListener('DOMContentLoaded', function() {
             document.getElementById('dataAquisicao').valueAsDate = new Date();
             adicionarAparelho();
         });
-        
+
         function adicionarAparelho() {
             aparelhoCount++;
             const container = document.getElementById('aparelhosContainer');
-            
             const html = `
                 <div class="aparelho-card novo" id="aparelho-${aparelhoCount}" data-index="${aparelhoCount}">
                     <div class="aparelho-header">
                         <span class="aparelho-number">Aparelho #${aparelhoCount}</span>
                         ${aparelhoCount > 1 ? `<button type="button" class="btn-remove" onclick="removerAparelho(${aparelhoCount})">X</button>` : ''}
                     </div>
-                    
                     <div class="tipo-entrada">
-                        <div class="tipo-btn codigo" onclick="selecionarTipo(${aparelhoCount}, 'codigo')">
-                            Por CODIGO
-                        </div>
-                        <div class="tipo-btn novo active novo" onclick="selecionarTipo(${aparelhoCount}, 'novo')">
-                            NOVO PRODUTO
-                        </div>
+                        <div class="tipo-btn codigo" onclick="selecionarTipo(${aparelhoCount}, 'codigo')">Por CODIGO</div>
+                        <div class="tipo-btn novo active novo" onclick="selecionarTipo(${aparelhoCount}, 'novo')">NOVO PRODUTO</div>
                     </div>
-                    
                     <input type="hidden" name="tipo-${aparelhoCount}" id="tipo-${aparelhoCount}" value="novo">
-                    
                     <div class="campos-codigo" id="campos-codigo-${aparelhoCount}">
                         <div class="form-group">
                             <label>Codigo do Produto *</label>
-                            <input type="text" name="codigo-${aparelhoCount}" id="codigo-${aparelhoCount}" 
-                                   placeholder="Ex: AP001" oninput="atualizarResumo()">
+                            <input type="text" name="codigo-${aparelhoCount}" id="codigo-${aparelhoCount}" placeholder="Ex: AP001" oninput="atualizarResumo()">
                         </div>
                     </div>
-                    
                     <div class="campos-novo show" id="campos-novo-${aparelhoCount}">
                         <div class="form-row">
                             <div class="form-group">
@@ -419,8 +135,7 @@
                             </div>
                             <div class="form-group">
                                 <label>Modelo/Versao *</label>
-                                <input type="text" name="modelo-${aparelhoCount}" id="modelo-${aparelhoCount}" 
-                                       placeholder="Ex: Poco C85" oninput="atualizarResumo()">
+                                <input type="text" name="modelo-${aparelhoCount}" id="modelo-${aparelhoCount}" placeholder="Ex: Poco C85" oninput="atualizarResumo()">
                             </div>
                         </div>
                         <div class="form-row">
@@ -437,39 +152,31 @@
                             </div>
                             <div class="form-group">
                                 <label>Cor *</label>
-                                <input type="text" name="cor-${aparelhoCount}" id="cor-${aparelhoCount}" 
-                                       placeholder="Ex: Preto" oninput="atualizarResumo()">
+                                <input type="text" name="cor-${aparelhoCount}" id="cor-${aparelhoCount}" placeholder="Ex: Preto" oninput="atualizarResumo()">
                             </div>
                         </div>
                     </div>
-                    
                     <div class="form-row">
                         <div class="form-group">
                             <label>Quantidade *</label>
-                            <input type="number" name="quantidade-${aparelhoCount}" id="quantidade-${aparelhoCount}" 
-                                   min="1" value="1" required oninput="atualizarResumo()">
+                            <input type="number" name="quantidade-${aparelhoCount}" id="quantidade-${aparelhoCount}" min="1" value="1" required oninput="atualizarResumo()">
                         </div>
                         <div class="form-group">
-                            <label>Preco Total (R$) *</label>
-                            <input type="number" name="preco-${aparelhoCount}" id="preco-${aparelhoCount}" 
-                                   min="0" step="0.01" placeholder="0.00" required oninput="atualizarResumo()">
+                            <label>Preco Unitario (R$) *</label>
+                            <input type="number" name="preco-${aparelhoCount}" id="preco-${aparelhoCount}" min="0" step="0.01" placeholder="0.00" required oninput="atualizarResumo()">
                         </div>
                     </div>
                 </div>
             `;
-            
             container.insertAdjacentHTML('beforeend', html);
             atualizarResumo();
         }
-        
+
         function removerAparelho(index) {
             const aparelho = document.getElementById(`aparelho-${index}`);
-            if (aparelho) {
-                aparelho.remove();
-                atualizarResumo();
-            }
+            if (aparelho) { aparelho.remove(); atualizarResumo(); }
         }
-        
+
         function selecionarTipo(index, tipo) {
             const card = document.getElementById(`aparelho-${index}`);
             const btnCodigo = card.querySelector('.tipo-btn.codigo');
@@ -477,64 +184,54 @@
             const camposCodigo = document.getElementById(`campos-codigo-${index}`);
             const camposNovo = document.getElementById(`campos-novo-${index}`);
             const inputTipo = document.getElementById(`tipo-${index}`);
-            
-            btnCodigo.classList.remove('active');
-            btnNovo.classList.remove('active');
+            btnCodigo.classList.remove('active'); btnNovo.classList.remove('active');
             card.classList.remove('codigo', 'novo');
-            
             if (tipo === 'codigo') {
-                btnCodigo.classList.add('active');
-                card.classList.add('codigo');
-                camposCodigo.classList.add('show');
-                camposNovo.classList.remove('show');
+                btnCodigo.classList.add('active'); card.classList.add('codigo');
+                camposCodigo.classList.add('show'); camposNovo.classList.remove('show');
                 inputTipo.value = 'codigo';
             } else {
-                btnNovo.classList.add('active');
-                card.classList.add('novo');
-                camposCodigo.classList.remove('show');
-                camposNovo.classList.add('show');
+                btnNovo.classList.add('active'); card.classList.add('novo');
+                camposCodigo.classList.remove('show'); camposNovo.classList.add('show');
                 inputTipo.value = 'novo';
             }
-            
             atualizarResumo();
         }
-        
+
         function atualizarResumo() {
             const cards = document.querySelectorAll('.aparelho-card');
             const resumoContainer = document.getElementById('resumo');
             const resumoItens = document.getElementById('resumoItens');
             const resumoTotal = document.getElementById('resumoTotal');
-            
             let total = 0;
             let html = '';
-            
             cards.forEach((card) => {
                 const index = card.dataset.index;
                 const tipo = document.getElementById(`tipo-${index}`)?.value;
                 const quantidade = parseInt(document.getElementById(`quantidade-${index}`)?.value) || 0;
-                const preco = parseFloat(document.getElementById(`preco-${index}`)?.value) || 0;
-                
+                const precoUnitario = parseFloat(document.getElementById(`preco-${index}`)?.value) || 0;
+                const subtotal = quantidade * precoUnitario;
                 let descricao = '';
                 if (tipo === 'codigo') {
-                    const codigo = document.getElementById(`codigo-${index}`)?.value || '?';
-                    descricao = `Codigo: ${codigo}`;
+                    descricao = `Codigo: ${document.getElementById(`codigo-${index}`)?.value || '?'}`;
                 } else {
                     const marca = document.getElementById(`marca-${index}`)?.value || '?';
                     const modelo = document.getElementById(`modelo-${index}`)?.value || '?';
                     descricao = `${marca} ${modelo}`;
                 }
-                
-                if (quantidade > 0 && preco > 0) {
-                    total += preco;
+                if (quantidade > 0 && precoUnitario > 0) {
+                    total += subtotal;
                     html += `
                         <div class="resumo-item">
-                            <span>${quantidade}x ${descricao}</span>
-                            <span>R$ ${preco.toFixed(2)}</span>
+                            <div>
+                                <div>${quantidade}x ${descricao}</div>
+                                <div class="detail">${quantidade} x R$ ${precoUnitario.toFixed(2)} = R$ ${subtotal.toFixed(2)}</div>
+                            </div>
+                            <span>R$ ${subtotal.toFixed(2)}</span>
                         </div>
                     `;
                 }
             });
-            
             if (html) {
                 resumoContainer.style.display = 'block';
                 resumoItens.innerHTML = html;
@@ -543,27 +240,24 @@
                 resumoContainer.style.display = 'none';
             }
         }
-        
+
         document.getElementById('formCompra').addEventListener('submit', async function(e) {
             e.preventDefault();
-            
             const dataAquisicao = document.getElementById('dataAquisicao').value;
             const cards = document.querySelectorAll('.aparelho-card');
             const aparelhos = [];
-            
             cards.forEach(card => {
                 const index = card.dataset.index;
                 const tipo = document.getElementById(`tipo-${index}`)?.value;
                 const quantidade = parseInt(document.getElementById(`quantidade-${index}`)?.value) || 0;
-                const preco = parseFloat(document.getElementById(`preco-${index}`)?.value) || 0;
-                
-                if (quantidade > 0 && preco > 0) {
+                const precoUnitario = parseFloat(document.getElementById(`preco-${index}`)?.value) || 0;
+                if (quantidade > 0 && precoUnitario > 0) {
                     const aparelho = {
                         tipoEntrada: tipo,
                         quantidade: quantidade,
-                        precoTotal: preco
+                        precoUnitario: precoUnitario,
+                        precoTotal: quantidade * precoUnitario
                     };
-                    
                     if (tipo === 'codigo') {
                         aparelho.codigo = document.getElementById(`codigo-${index}`)?.value?.trim().toUpperCase();
                     } else {
@@ -572,59 +266,33 @@
                         aparelho.capacidade = document.getElementById(`capacidade-${index}`)?.value;
                         aparelho.cor = document.getElementById(`cor-${index}`)?.value;
                     }
-                    
                     aparelhos.push(aparelho);
                 }
             });
-            
-            if (aparelhos.length === 0) {
-                alert('Adicione pelo menos um aparelho com quantidade e preco');
-                return;
-            }
-            
+            if (aparelhos.length === 0) { alert('Adicione pelo menos um aparelho com quantidade e preco'); return; }
             for (let i = 0; i < aparelhos.length; i++) {
                 const ap = aparelhos[i];
-                if (ap.tipoEntrada === 'codigo' && !ap.codigo) {
-                    alert(`Aparelho #${i+1}: Informe o codigo do produto`);
-                    return;
-                }
-                if (ap.tipoEntrada === 'novo' && (!ap.marca || !ap.modelo || !ap.capacidade || !ap.cor)) {
-                    alert(`Aparelho #${i+1}: Preencha todos os campos (Marca, Modelo, Capacidade, Cor)`);
-                    return;
-                }
+                if (ap.tipoEntrada === 'codigo' && !ap.codigo) { alert(`Aparelho #${i+1}: Informe o codigo do produto`); return; }
+                if (ap.tipoEntrada === 'novo' && (!ap.marca || !ap.modelo || !ap.capacidade || !ap.cor)) { alert(`Aparelho #${i+1}: Preencha todos os campos`); return; }
             }
-            
             const payload = {
                 dataAquisicao: dataAquisicao,
                 aparelhos: aparelhos,
                 totalGeral: aparelhos.reduce((sum, ap) => sum + ap.precoTotal, 0)
             };
-            
             document.getElementById('loading').classList.add('show');
             document.getElementById('btnSubmit').disabled = true;
             document.getElementById('alertSuccess').style.display = 'none';
             document.getElementById('alertError').style.display = 'none';
-            
             try {
-                const response = await fetch(WEBHOOK_URL, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify(payload)
-                });
-                
+                const response = await fetch(WEBHOOK_URL, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
                 if (response.ok) {
                     document.getElementById('alertSuccess').style.display = 'block';
                     document.getElementById('alertSuccess').textContent = 'Compra registrada com sucesso!';
-                    
                     document.getElementById('aparelhosContainer').innerHTML = '';
-                    aparelhoCount = 0;
-                    adicionarAparelho();
+                    aparelhoCount = 0; adicionarAparelho();
                     document.getElementById('resumo').style.display = 'none';
-                } else {
-                    throw new Error('Erro na resposta do servidor');
-                }
+                } else { throw new Error('Erro na resposta do servidor'); }
             } catch (error) {
                 document.getElementById('alertError').style.display = 'block';
                 document.getElementById('alertError').textContent = 'Erro ao registrar: ' + error.message;
