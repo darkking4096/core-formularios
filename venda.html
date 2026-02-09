@@ -5,900 +5,418 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Core Distribuidora - Venda com Recibo PDF</title>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
-            min-height: 100vh;
-            padding: 20px;
-        }
-        
-        .container {
-            max-width: 900px;
-            margin: 0 auto;
-        }
-        
-        .header {
-            text-align: center;
-            margin-bottom: 30px;
-            color: #fff;
-        }
-        
-        .header h1 {
-            font-size: 28px;
-            margin-bottom: 10px;
-            color: #3498db;
-        }
-        
-        .header p {
-            color: #bdc3c7;
-        }
-        
-        .form-card {
-            background: #fff;
-            border-radius: 15px;
-            padding: 30px;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
-            margin-bottom: 20px;
-        }
-        
-        .section-title {
-            font-size: 18px;
-            font-weight: 600;
-            color: #2c3e50;
-            margin-bottom: 20px;
-            padding-bottom: 10px;
-            border-bottom: 2px solid #3498db;
-        }
-        
-        .form-group {
-            margin-bottom: 20px;
-        }
-        
-        .form-group label {
-            display: block;
-            margin-bottom: 8px;
-            font-weight: 500;
-            color: #34495e;
-        }
-        
-        .form-group input,
-        .form-group select,
-        .form-group textarea {
-            width: 100%;
-            padding: 12px 15px;
-            border: 2px solid #e0e0e0;
-            border-radius: 8px;
-            font-size: 15px;
-            transition: border-color 0.3s;
-        }
-        
-        .form-group textarea {
-            resize: vertical;
-            min-height: 80px;
-        }
-        
-        .form-group input:focus,
-        .form-group select:focus,
-        .form-group textarea:focus {
-            outline: none;
-            border-color: #3498db;
-        }
-        
-        .form-row {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 15px;
-        }
-        
-        .form-row-3 {
-            display: grid;
-            grid-template-columns: 1fr 1fr 1fr;
-            gap: 15px;
-        }
-        
-        .form-row-4 {
-            display: grid;
-            grid-template-columns: 2fr 1fr 1fr 1fr;
-            gap: 15px;
-        }
-        
-        .item-card {
-            background: #f8f9fa;
-            border: 2px solid #3498db;
-            border-radius: 12px;
-            padding: 20px;
-            margin-bottom: 15px;
-            position: relative;
-        }
-        
-        .item-card.acessorio {
-            border-color: #9b59b6;
-            background: #faf5ff;
-        }
-        
-        .item-card.cliente {
-            border-color: #27ae60;
-            background: #f0fff4;
-        }
-        
-        .item-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 15px;
-        }
-        
-        .item-number {
-            font-weight: 700;
-            font-size: 16px;
-            color: #2c3e50;
-        }
-        
-        .btn-remove {
-            background: #e74c3c;
-            color: #fff;
-            border: none;
-            width: 32px;
-            height: 32px;
-            border-radius: 50%;
-            cursor: pointer;
-            font-size: 18px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: background 0.3s;
-        }
-        
-        .btn-remove:hover {
-            background: #c0392b;
-        }
-        
-        .btn-add {
-            background: #3498db;
-            color: #fff;
-            border: none;
-            padding: 12px 25px;
-            border-radius: 8px;
-            font-size: 15px;
-            font-weight: 600;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-            transition: background 0.3s;
-            margin-bottom: 20px;
-        }
-        
-        .btn-add:hover {
-            background: #2980b9;
-        }
-        
-        .btn-add.acessorio {
-            background: #9b59b6;
-        }
-        
-        .btn-add.acessorio:hover {
-            background: #8e44ad;
-        }
-        
-        .pagamento-card {
-            background: #fff9e6;
-            border: 2px solid #f39c12;
-            border-radius: 12px;
-            padding: 20px;
-            margin-bottom: 15px;
-        }
-        
-        .pagamento-header {
-            font-weight: 600;
-            color: #2c3e50;
-            margin-bottom: 15px;
-        }
-        
-        .parcelas-container {
-            display: none;
-        }
-        
-        .parcelas-container.show {
-            display: block;
-        }
-        
-        .resumo {
-            background: #2c3e50;
-            border-radius: 12px;
-            padding: 20px;
-            color: #fff;
-            margin-top: 20px;
-            display: none;
-        }
-        
-        .resumo.show {
-            display: block;
-        }
-        
-        .resumo-title {
-            font-size: 16px;
-            font-weight: 600;
-            margin-bottom: 15px;
-            color: #3498db;
-        }
-        
-        .resumo-item {
-            display: flex;
-            justify-content: space-between;
-            padding: 8px 0;
-            border-bottom: 1px solid #34495e;
-        }
-        
-        .resumo-item:last-child {
-            border-bottom: none;
-        }
-        
-        .resumo-total {
-            font-size: 20px;
-            font-weight: 700;
-            color: #2ecc71;
-            margin-top: 15px;
-            padding-top: 15px;
-            border-top: 2px solid #3498db;
-            display: flex;
-            justify-content: space-between;
-        }
-        
-        .btn-submit {
-            background: linear-gradient(135deg, #27ae60 0%, #2ecc71 100%);
-            color: #fff;
-            border: none;
-            padding: 18px 40px;
-            border-radius: 10px;
-            font-size: 18px;
-            font-weight: 700;
-            cursor: pointer;
-            width: 100%;
-            transition: transform 0.3s, box-shadow 0.3s;
-            margin-top: 20px;
-        }
-        
-        .btn-submit:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 20px rgba(46, 204, 113, 0.4);
-        }
-        
-        .btn-submit:disabled {
-            background: #95a5a6;
-            cursor: not-allowed;
-            transform: none;
-            box-shadow: none;
-        }
-        
-        .loading {
-            display: none;
-            text-align: center;
-            padding: 20px;
-        }
-        
-        .loading.show {
-            display: block;
-        }
-        
-        .loading-spinner {
-            border: 4px solid #f3f3f3;
-            border-top: 4px solid #3498db;
-            border-radius: 50%;
-            width: 40px;
-            height: 40px;
-            animation: spin 1s linear infinite;
-            margin: 0 auto 15px;
-        }
-        
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-        
-        .alert {
-            padding: 15px 20px;
-            border-radius: 8px;
-            margin-bottom: 20px;
-            display: none;
-        }
-        
-        .alert-success {
-            background: #d4edda;
-            color: #155724;
-            border: 1px solid #c3e6cb;
-        }
-        
-        .alert-error {
-            background: #f8d7da;
-            color: #721c24;
-            border: 1px solid #f5c6cb;
-        }
-        
-        .alert a {
-            color: inherit;
-            font-weight: bold;
-        }
-        
-        .info-box {
-            background: #e8f4fc;
-            border-left: 4px solid #3498db;
-            padding: 12px 15px;
-            margin-bottom: 15px;
-            border-radius: 0 8px 8px 0;
-            font-size: 14px;
-            color: #2c3e50;
-        }
-
-        @media (max-width: 768px) {
-            .form-row, .form-row-3, .form-row-4 {
-                grid-template-columns: 1fr;
-            }
-        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%); min-height: 100vh; padding: 20px; }
+        .container { max-width: 800px; margin: 0 auto; }
+        .header { text-align: center; margin-bottom: 30px; color: #fff; }
+        .header h1 { font-size: 28px; margin-bottom: 10px; color: #e94560; }
+        .header p { color: #bdc3c7; }
+        .form-card { background: #fff; border-radius: 15px; padding: 30px; box-shadow: 0 10px 40px rgba(0,0,0,0.3); margin-bottom: 20px; }
+        .section-title { font-size: 18px; font-weight: 600; color: #2c3e50; margin-bottom: 20px; padding-bottom: 10px; border-bottom: 2px solid #e94560; }
+        .form-group { margin-bottom: 20px; }
+        .form-group label { display: block; margin-bottom: 8px; font-weight: 500; color: #34495e; }
+        .form-group input, .form-group select, .form-group textarea { width: 100%; padding: 12px 15px; border: 2px solid #e0e0e0; border-radius: 8px; font-size: 15px; transition: border-color 0.3s; }
+        .form-group input:focus, .form-group select:focus, .form-group textarea:focus { outline: none; border-color: #e94560; }
+        .form-group textarea { resize: vertical; min-height: 60px; }
+        .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+        .form-row-3 { display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 15px; }
+        .form-row-full { grid-column: 1 / -1; }
+        .item-card { background: #f8f9fa; border: 2px solid #e94560; border-radius: 12px; padding: 20px; margin-bottom: 15px; }
+        .item-card.acessorio { border-color: #9b59b6; background: #faf5ff; }
+        .item-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
+        .item-number { font-weight: 700; font-size: 16px; color: #2c3e50; }
+        .btn-remove { background: #e74c3c; color: #fff; border: none; width: 32px; height: 32px; border-radius: 50%; cursor: pointer; font-size: 18px; display: flex; align-items: center; justify-content: center; }
+        .btn-remove:hover { background: #c0392b; }
+        .btn-add { background: #e94560; color: #fff; border: none; padding: 12px 25px; border-radius: 8px; font-size: 15px; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; margin-bottom: 20px; width: 100%; }
+        .btn-add:hover { background: #c23a51; }
+        .btn-add.acessorio { background: #9b59b6; }
+        .btn-add.acessorio:hover { background: #8e44ad; }
+        .btn-add.pagamento { background: #f39c12; }
+        .btn-add.pagamento:hover { background: #e67e22; }
+        .pagamento-card { background: #fff9e6; border: 2px solid #f39c12; border-radius: 12px; padding: 20px; margin-bottom: 15px; }
+        .pagamento-card.troca { border-color: #e74c3c; background: #fff5f5; }
+        .pagamento-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
+        .pagamento-title { font-weight: 600; color: #2c3e50; }
+        .troca-fields { display: none; margin-top: 15px; padding-top: 15px; border-top: 2px dashed #e74c3c; }
+        .troca-fields.show { display: block; }
+        .taxa-info { background: #fff3cd; border: 1px solid #ffc107; border-radius: 8px; padding: 10px 15px; margin-top: 10px; font-size: 13px; color: #856404; }
+        .taxa-info.green { background: #d4edda; border-color: #28a745; color: #155724; }
+        .resumo { background: #2c3e50; border-radius: 12px; padding: 20px; color: #fff; margin-top: 20px; }
+        .resumo-title { font-size: 16px; font-weight: 600; margin-bottom: 15px; color: #e94560; }
+        .resumo-section { margin-bottom: 15px; }
+        .resumo-section-title { font-size: 13px; color: #95a5a6; text-transform: uppercase; margin-bottom: 8px; }
+        .resumo-item { display: flex; justify-content: space-between; padding: 6px 0; border-bottom: 1px solid #34495e; font-size: 14px; }
+        .resumo-item:last-child { border-bottom: none; }
+        .resumo-item .label { color: #bdc3c7; }
+        .resumo-total { font-size: 20px; font-weight: 700; color: #2ecc71; margin-top: 10px; padding-top: 10px; border-top: 2px solid #e94560; display: flex; justify-content: space-between; }
+        .resumo-taxas { font-size: 14px; color: #e74c3c; margin-top: 5px; }
+        .btn-submit { background: linear-gradient(135deg, #e94560, #c23a51); color: #fff; border: none; padding: 18px 40px; border-radius: 10px; font-size: 18px; font-weight: 700; cursor: pointer; width: 100%; margin-top: 20px; }
+        .btn-submit:hover { box-shadow: 0 4px 15px rgba(233,69,96,0.4); }
+        .btn-submit:disabled { background: #95a5a6; cursor: not-allowed; box-shadow: none; }
+        .alert { padding: 15px 20px; border-radius: 8px; margin-bottom: 20px; display: none; }
+        .alert-success { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .alert-success a { color: #155724; font-weight: bold; }
+        .alert-error { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+        .loading { display: none; text-align: center; padding: 20px; }
+        .loading.show { display: block; }
+        .spinner { width: 40px; height: 40px; border: 4px solid #e0e0e0; border-top-color: #e94560; border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto 10px; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .hint { color: #7f8c8d; margin-bottom: 15px; font-size: 14px; }
+        @media (max-width: 600px) { .form-row, .form-row-3 { grid-template-columns: 1fr; } }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="header">
-            <h1>Core Distribuidora</h1>
-            <p>Venda com Recibo PDF</p>
+            <h1>🧾 Venda com Recibo PDF</h1>
+            <p>Core Distribuidora - Venda com geração de recibo</p>
         </div>
-        
-        <div class="alert alert-success" id="alertSuccess"></div>
-        <div class="alert alert-error" id="alertError"></div>
-        
-        <form id="formVenda">
-            <!-- Dados da Venda -->
-            <div class="form-card">
-                <h2 class="section-title">Dados da Venda</h2>
+        <div class="form-card">
+            <div class="alert alert-success" id="alertSuccess"></div>
+            <div class="alert alert-error" id="alertError"></div>
+            <form id="formVenda">
+
+                <div class="section-title">📅 Dados da Venda</div>
                 <div class="form-row">
-                    <div class="form-group">
-                        <label>Data da Venda</label>
-                        <input type="date" id="dataVenda" required>
-                    </div>
-                    <div class="form-group">
-                        <label>Vendedor</label>
-                        <input type="text" id="vendedor" placeholder="Nome do vendedor" required>
-                    </div>
+                    <div class="form-group"><label>Data da Venda *</label><input type="date" id="dataVenda" required></div>
+                    <div class="form-group"><label>Vendedor *</label><input type="text" id="vendedor" placeholder="Nome do vendedor" required></div>
                 </div>
-            </div>
 
-            <!-- Dados do Cliente -->
-            <div class="form-card">
-                <h2 class="section-title">Dados do Cliente</h2>
-                <div class="item-card cliente">
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label>Nome Completo *</label>
-                            <input type="text" id="clienteNome" placeholder="Nome completo do cliente" required>
-                        </div>
-                        <div class="form-group">
-                            <label>Telefone *</label>
-                            <input type="tel" id="clienteTelefone" placeholder="(62) 99999-9999" required>
-                        </div>
-                    </div>
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label>CPF *</label>
-                            <input type="text" id="clienteCpf" placeholder="000.000.000-00" required>
-                        </div>
-                        <div class="form-group">
-                            <label>E-mail</label>
-                            <input type="email" id="clienteEmail" placeholder="email@exemplo.com">
-                        </div>
-                    </div>
-                    <div class="form-row-3">
-                        <div class="form-group">
-                            <label>Endereco *</label>
-                            <input type="text" id="clienteEndereco" placeholder="Rua, numero, bairro" required>
-                        </div>
-                        <div class="form-group">
-                            <label>Cidade *</label>
-                            <input type="text" id="clienteCidade" placeholder="Goiania" value="Goiania" required>
-                        </div>
-                        <div class="form-group">
-                            <label>Estado</label>
-                            <select id="clienteEstado">
-                                <option value="GO" selected>GO</option>
-                                <option value="DF">DF</option>
-                                <option value="MT">MT</option>
-                                <option value="MS">MS</option>
-                                <option value="TO">TO</option>
-                                <option value="SP">SP</option>
-                                <option value="MG">MG</option>
-                                <option value="BA">BA</option>
-                            </select>
-                        </div>
+                <div class="section-title">👤 Dados do Cliente</div>
+                <div class="form-row">
+                    <div class="form-group" style="grid-column:span 2"><label>Nome Completo *</label><input type="text" id="clienteNome" placeholder="Nome completo" required></div>
+                    <div class="form-group"><label>Telefone *</label><input type="tel" id="clienteTelefone" placeholder="(62) 99999-9999" required></div>
+                    <div class="form-group"><label>CPF *</label><input type="text" id="clienteCpf" placeholder="000.000.000-00" required></div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group" style="grid-column:span 2"><label>E-mail</label><input type="email" id="clienteEmail" placeholder="email@exemplo.com"></div>
+                    <div class="form-group" style="grid-column:span 2"><label>Endereco *</label><input type="text" id="clienteEndereco" placeholder="Rua, numero, bairro" required></div>
+                    <div class="form-group"><label>CEP</label><input type="text" id="clienteCep" placeholder="00000-000"></div>
+                    <div class="form-group"><label>Cidade *</label><input type="text" id="clienteCidade" placeholder="Goiania" required></div>
+                    <div class="form-group"><label>Estado</label>
+                        <select id="clienteEstado">
+                            <option value="GO" selected>GO</option><option value="SP">SP</option><option value="RJ">RJ</option>
+                            <option value="MG">MG</option><option value="BA">BA</option><option value="PR">PR</option>
+                            <option value="RS">RS</option><option value="DF">DF</option><option value="TO">TO</option>
+                        </select>
                     </div>
                 </div>
-            </div>
 
-            <!-- Aparelhos -->
-            <div class="form-card">
-                <h2 class="section-title">Aparelhos</h2>
-                <div class="info-box">
-                    Digite o codigo do aparelho conforme cadastrado no estoque (ex: AP001001)
-                </div>
+                <div class="section-title">📱 Aparelhos</div>
+                <p class="hint">Informe o codigo do produto no estoque (ex: AP001-001)</p>
                 <div id="aparelhosContainer"></div>
                 <button type="button" class="btn-add" onclick="adicionarAparelho()">+ Adicionar Aparelho</button>
-            </div>
-            
-            <!-- Acessorios -->
-            <div class="form-card">
-                <h2 class="section-title">Acessorios (Brinde)</h2>
-                <div id="acessoriosContainer"></div>
-                <button type="button" class="btn-add acessorio" onclick="adicionarAcessorio()">+ Adicionar Acessorio</button>
-            </div>
-            
-            <!-- Pagamento -->
-            <div class="form-card">
-                <h2 class="section-title">Pagamento</h2>
-                
-                <div class="pagamento-card">
-                    <div class="pagamento-header">Pagamento Principal</div>
-                    <div class="form-row-3">
-                        <div class="form-group">
-                            <label>Forma de Pagamento</label>
-                            <select id="forma1" onchange="toggleParcelas(1); calcularResumo();" required>
-                                <option value="">Selecione...</option>
-                                <option value="Dinheiro">Dinheiro</option>
-                                <option value="PIX">PIX</option>
-                                <option value="Debito">Debito</option>
-                                <option value="Credito">Credito</option>
-                            </select>
-                        </div>
-                        <div class="form-group parcelas-container" id="parcelas1Container">
-                            <label>Parcelas</label>
-                            <select id="parcelas1" onchange="calcularResumo()">
-                                <option value="1">1x</option>
-                                <option value="2">2x</option>
-                                <option value="3">3x</option>
-                                <option value="4">4x</option>
-                                <option value="5">5x</option>
-                                <option value="6">6x</option>
-                                <option value="7">7x</option>
-                                <option value="8">8x</option>
-                                <option value="9">9x</option>
-                                <option value="10">10x</option>
-                                <option value="11">11x</option>
-                                <option value="12">12x</option>
-                            </select>
-                        </div>
-                        <div class="form-group">
-                            <label>Valor (R$)</label>
-                            <input type="number" id="valor1" step="0.01" placeholder="0.00" 
-                                   oninput="calcularResumo()" required>
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="pagamento-card" id="pagamento2Card" style="opacity: 0.7;">
-                    <div class="pagamento-header">Pagamento Secundario (Opcional)</div>
-                    <div class="form-row-3">
-                        <div class="form-group">
-                            <label>Forma de Pagamento</label>
-                            <select id="forma2" onchange="toggleParcelas(2); calcularResumo();">
-                                <option value="">Nenhum</option>
-                                <option value="Dinheiro">Dinheiro</option>
-                                <option value="PIX">PIX</option>
-                                <option value="Debito">Debito</option>
-                                <option value="Credito">Credito</option>
-                            </select>
-                        </div>
-                        <div class="form-group parcelas-container" id="parcelas2Container">
-                            <label>Parcelas</label>
-                            <select id="parcelas2" onchange="calcularResumo()">
-                                <option value="1">1x</option>
-                                <option value="2">2x</option>
-                                <option value="3">3x</option>
-                                <option value="4">4x</option>
-                                <option value="5">5x</option>
-                                <option value="6">6x</option>
-                                <option value="7">7x</option>
-                                <option value="8">8x</option>
-                                <option value="9">9x</option>
-                                <option value="10">10x</option>
-                                <option value="11">11x</option>
-                                <option value="12">12x</option>
-                            </select>
-                        </div>
-                        <div class="form-group">
-                            <label>Valor (R$)</label>
-                            <input type="number" id="valor2" step="0.01" placeholder="0.00" 
-                                   oninput="calcularResumo()">
-                        </div>
-                    </div>
-                </div>
-            </div>
 
-            <!-- Observacao -->
-            <div class="form-card">
-                <h2 class="section-title">Observacao</h2>
+                <div class="section-title">🎁 Acessorios Brinde (opcional)</div>
+                <div id="acessoriosContainer"></div>
+                <button type="button" class="btn-add acessorio" onclick="adicionarAcessorio()">+ Adicionar Acessorio Brinde</button>
+
+                <div class="section-title">💳 Pagamento</div>
+                <p class="hint">Informe o valor base de venda. A taxa sera calculada automaticamente.</p>
+                <div id="pagamentosContainer"></div>
+                <button type="button" class="btn-add pagamento" onclick="adicionarPagamento()">+ Adicionar Forma de Pagamento</button>
+
+                <div class="section-title">📝 Observação</div>
                 <div class="form-group">
-                    <label>Observacoes (IMEI, detalhes, etc.)</label>
-                    <textarea id="observacao" placeholder="Ex: IMEI 864280083840945"></textarea>
+                    <textarea id="observacao" placeholder="Observacoes adicionais sobre a venda..."></textarea>
                 </div>
-            </div>
-            
-            <!-- Resumo -->
-            <div class="resumo" id="resumo">
-                <div class="resumo-title">Resumo da Venda</div>
-                <div id="resumoItens"></div>
-                <div class="resumo-total">
-                    <span>Total:</span>
-                    <span id="resumoTotal">R$ 0,00</span>
+
+                <div class="resumo" id="resumo" style="display:none;">
+                    <div class="resumo-title">Resumo da Venda</div>
+                    <div id="resumoContent"></div>
                 </div>
-                <div id="resumoTaxas" style="font-size: 14px; color: #e74c3c; margin-top: 10px;"></div>
-                <div id="resumoLucro" style="font-size: 14px; color: #2ecc71; margin-top: 5px;"></div>
-            </div>
-            
-            <div class="loading" id="loading">
-                <div class="loading-spinner"></div>
-                <p>Processando venda e gerando PDF...</p>
-            </div>
-            
-            <button type="submit" class="btn-submit" id="btnSubmit">REGISTRAR VENDA E GERAR PDF</button>
-        </form>
+
+                <div class="loading" id="loading"><div class="spinner"></div><p>Registrando venda e gerando PDF...</p></div>
+                <button type="submit" class="btn-submit" id="btnSubmit">REGISTRAR VENDA E GERAR RECIBO</button>
+            </form>
+        </div>
     </div>
-    
+
     <script>
-        // CONFIGURACAO - Altere a URL do webhook aqui
         const WEBHOOK_URL = 'https://n8neditor.coofe.online/webhook/venda-pdf';
-        
-        // Taxas de cartao
+        let aparelhoCount = 0, acessorioCount = 0, pagamentoCount = 0;
+
         const TAXAS = {
-            'Dinheiro': 0,
-            'PIX': 0.99,
-            'Debito': 1.69,
-            'Credito': {
-                1: 3.89, 2: 5.51, 3: 6.27, 4: 7.02, 5: 7.77, 6: 8.53,
-                7: 9.78, 8: 10.53, 9: 11.29, 10: 12.04, 11: 12.80, 12: 13.55
-            }
+            'Dinheiro': 0, 'PIX': 0, 'PIX QR Code': 0.99, 'Debito': 1.69,
+            'Credito': {1:3.89,2:5.51,3:6.27,4:7.02,5:7.77,6:8.53,7:9.78,8:10.53,9:11.29,10:12.04,11:12.80,12:13.55,13:14.49,14:15.25,15:16.00,16:16.75,17:17.51,18:18.26}
         };
-        
-        let aparelhoCount = 0;
-        let acessorioCount = 0;
-        
-        // Inicializacao
-        document.addEventListener('DOMContentLoaded', function() {
-            document.getElementById('dataVenda').valueAsDate = new Date();
-            adicionarAparelho();
-        });
-        
-        function toggleParcelas(num) {
-            const forma = document.getElementById(`forma${num}`).value;
-            const container = document.getElementById(`parcelas${num}Container`);
-            if (forma === 'Credito') {
-                container.classList.add('show');
-            } else {
-                container.classList.remove('show');
-            }
-            
-            // Atualizar opacidade do pagamento 2
-            const pag2Card = document.getElementById('pagamento2Card');
-            const forma2 = document.getElementById('forma2').value;
-            pag2Card.style.opacity = forma2 ? '1' : '0.7';
+
+        function getTaxaPercent(forma, parcelas) {
+            if (!forma || forma === 'TROCA') return 0;
+            if (forma === 'Dinheiro' || forma === 'PIX') return 0;
+            if (forma === 'PIX QR Code') return 0.99;
+            if (forma === 'Debito') return 1.69;
+            if (forma === 'Credito') return TAXAS.Credito[parseInt(parcelas) || 1] || 3.89;
+            return 0;
         }
-        
+
+        document.addEventListener('DOMContentLoaded', function() {
+            document.getElementById('dataVenda').value = new Date().toISOString().split('T')[0];
+            adicionarAparelho();
+            adicionarPagamento();
+        });
+
         function adicionarAparelho() {
             aparelhoCount++;
-            const container = document.getElementById('aparelhosContainer');
-            
             const html = `
                 <div class="item-card" id="aparelho-${aparelhoCount}" data-index="${aparelhoCount}">
                     <div class="item-header">
                         <span class="item-number">Aparelho #${aparelhoCount}</span>
-                        ${aparelhoCount > 1 ? `<button type="button" class="btn-remove" onclick="removerAparelho(${aparelhoCount})">X</button>` : ''}
+                        ${aparelhoCount > 1 ? `<button type="button" class="btn-remove" onclick="removerAparelho(${aparelhoCount})">x</button>` : ''}
                     </div>
-                    <div class="form-row-3">
-                        <div class="form-group">
-                            <label>Codigo do Aparelho</label>
-                            <input type="text" id="codAparelho-${aparelhoCount}" 
-                                   placeholder="AP001001" 
-                                   oninput="this.value = this.value.toUpperCase(); calcularResumo();">
-                        </div>
-                        <div class="form-group">
-                            <label>Preco de Venda (R$)</label>
-                            <input type="number" id="precoAparelho-${aparelhoCount}" 
-                                   step="0.01" placeholder="999.00"
-                                   oninput="calcularResumo()">
-                        </div>
-                        <div class="form-group">
-                            <label>Desconto (R$)</label>
-                            <input type="number" id="descontoAparelho-${aparelhoCount}" 
-                                   step="0.01" placeholder="0.00" value="0"
-                                   oninput="calcularResumo()">
-                        </div>
+                    <div class="form-row">
+                        <div class="form-group"><label>Codigo do Produto *</label><input type="text" id="codAparelho-${aparelhoCount}" placeholder="Ex: AP001-001" oninput="this.value=this.value.toUpperCase();calcularResumo()"></div>
+                        <div class="form-group"><label>Preco Base de Venda (R$) *</label><input type="number" id="precoAparelho-${aparelhoCount}" min="0" step="0.01" placeholder="0.00" oninput="calcularResumo()"></div>
                     </div>
-                </div>
-            `;
-            
-            container.insertAdjacentHTML('beforeend', html);
+                </div>`;
+            document.getElementById('aparelhosContainer').insertAdjacentHTML('beforeend', html);
         }
-        
-        function removerAparelho(index) {
-            const el = document.getElementById(`aparelho-${index}`);
-            if (el) {
-                el.remove();
-                calcularResumo();
-            }
-        }
-        
+        function removerAparelho(i) { document.getElementById(`aparelho-${i}`)?.remove(); calcularResumo(); }
+
         function adicionarAcessorio() {
             acessorioCount++;
-            const container = document.getElementById('acessoriosContainer');
-            
             const html = `
                 <div class="item-card acessorio" id="acessorio-${acessorioCount}" data-index="${acessorioCount}">
                     <div class="item-header">
                         <span class="item-number">Acessorio #${acessorioCount}</span>
-                        <button type="button" class="btn-remove" onclick="removerAcessorio(${acessorioCount})">X</button>
+                        <button type="button" class="btn-remove" onclick="removerAcessorio(${acessorioCount})">x</button>
                     </div>
                     <div class="form-row">
-                        <div class="form-group">
-                            <label>Codigo do Acessorio</label>
-                            <input type="text" id="codAcessorio-${acessorioCount}" 
-                                   placeholder="AC001"
-                                   oninput="this.value = this.value.toUpperCase(); calcularResumo();">
+                        <div class="form-group"><label>Codigo do Acessorio</label><input type="text" id="codAcessorio-${acessorioCount}" placeholder="Ex: AC001" oninput="this.value=this.value.toUpperCase()"></div>
+                        <div class="form-group"><label>Quantidade</label><input type="number" id="qtdAcessorio-${acessorioCount}" min="1" value="1"></div>
+                    </div>
+                </div>`;
+            document.getElementById('acessoriosContainer').insertAdjacentHTML('beforeend', html);
+        }
+        function removerAcessorio(i) { document.getElementById(`acessorio-${i}`)?.remove(); calcularResumo(); }
+
+        function adicionarPagamento() {
+            pagamentoCount++;
+            const idx = pagamentoCount;
+            const html = `
+                <div class="pagamento-card" id="pagamento-${idx}" data-index="${idx}">
+                    <div class="pagamento-header">
+                        <span class="pagamento-title">Pagamento #${idx}</span>
+                        ${idx > 1 ? `<button type="button" class="btn-remove" onclick="removerPagamento(${idx})">x</button>` : ''}
+                    </div>
+                    <div class="form-row-3">
+                        <div class="form-group"><label>Forma *</label>
+                            <select id="forma-${idx}" onchange="onFormaChange(${idx})">
+                                <option value="">Selecione...</option>
+                                <option value="Dinheiro">Dinheiro</option>
+                                <option value="PIX">PIX</option>
+                                <option value="PIX QR Code">PIX QR Code</option>
+                                <option value="Debito">Debito</option>
+                                <option value="Credito">Credito</option>
+                                <option value="TROCA">TROCA (Aparelho)</option>
+                            </select>
                         </div>
-                        <div class="form-group">
-                            <label>Quantidade</label>
-                            <input type="number" id="qtdAcessorio-${acessorioCount}" 
-                                   min="1" value="1"
-                                   oninput="calcularResumo()">
+                        <div class="form-group" id="parcelasGroup-${idx}" style="display:none;"><label>Parcelas</label>
+                            <select id="parcelas-${idx}" onchange="calcularResumo()">
+                                ${Array.from({length:18}, (_, i) => `<option value="${i+1}">${i+1}x</option>`).join('')}
+                            </select>
+                        </div>
+                        <div class="form-group" id="valorGroup-${idx}"><label>Valor Base (R$) *</label>
+                            <input type="number" id="valorBase-${idx}" min="0" step="0.01" placeholder="0.00" oninput="calcularResumo()">
                         </div>
                     </div>
-                </div>
-            `;
-            
-            container.insertAdjacentHTML('beforeend', html);
-        }
-        
-        function removerAcessorio(index) {
-            const el = document.getElementById(`acessorio-${index}`);
-            if (el) {
-                el.remove();
-                calcularResumo();
-            }
-        }
-        
-        function calcularTaxa(forma, parcelas, valor) {
-            if (!forma || !valor) return 0;
-            
-            if (forma === 'Dinheiro') return 0;
-            if (forma === 'PIX') return valor * (TAXAS.PIX / 100);
-            if (forma === 'Debito') return valor * (TAXAS['Debito'] / 100);
-            if (forma === 'Credito') {
-                const p = parseInt(parcelas) || 1;
-                const taxa = TAXAS.Credito[p] || TAXAS.Credito[1];
-                return valor * (taxa / 100);
-            }
-            return 0;
-        }
-        
-        function calcularResumo() {
-            const resumoDiv = document.getElementById('resumo');
-            const resumoItens = document.getElementById('resumoItens');
-            const resumoTotal = document.getElementById('resumoTotal');
-            const resumoTaxas = document.getElementById('resumoTaxas');
-            const resumoLucro = document.getElementById('resumoLucro');
-            
-            let html = '';
-            let totalVenda = 0;
-            
-            // Aparelhos
-            document.querySelectorAll('[id^="aparelho-"]').forEach(card => {
-                const index = card.dataset.index;
-                const codigo = document.getElementById(`codAparelho-${index}`)?.value?.trim().toUpperCase() || '';
-                const preco = parseFloat(document.getElementById(`precoAparelho-${index}`)?.value) || 0;
-                const desconto = parseFloat(document.getElementById(`descontoAparelho-${index}`)?.value) || 0;
-                
-                if (codigo && preco > 0) {
-                    const valorFinal = preco - desconto;
-                    totalVenda += valorFinal;
-                    html += `
-                        <div class="resumo-item">
-                            <span>${codigo}</span>
-                            <span>R$ ${valorFinal.toFixed(2)}</span>
+                    <div class="taxa-info" id="taxaInfo-${idx}" style="display:none;"></div>
+                    <div class="troca-fields" id="trocaFields-${idx}">
+                        <div class="section-title" style="border-color:#e74c3c;color:#e74c3c;">Aparelho de Troca</div>
+                        <div class="form-row">
+                            <div class="form-group"><label>Marca *</label>
+                                <select id="trocaMarca-${idx}"><option value="">Selecione...</option><option value="Xiaomi">Xiaomi</option><option value="Samsung">Samsung</option><option value="Apple">Apple</option><option value="Motorola">Motorola</option><option value="Realme">Realme</option><option value="Poco">Poco</option><option value="Redmi">Redmi</option><option value="Outro">Outro</option></select>
+                            </div>
+                            <div class="form-group"><label>Modelo/Versao *</label><input type="text" id="trocaModelo-${idx}" placeholder="Ex: Galaxy S23"></div>
                         </div>
-                    `;
-                }
-            });
-            
-            // Acessorios
-            document.querySelectorAll('[id^="acessorio-"]').forEach(card => {
-                const index = card.dataset.index;
-                const codigo = document.getElementById(`codAcessorio-${index}`)?.value?.trim().toUpperCase() || '';
-                const qtd = parseInt(document.getElementById(`qtdAcessorio-${index}`)?.value) || 1;
-                
-                if (codigo) {
-                    html += `
-                        <div class="resumo-item">
-                            <span>${codigo} (${qtd}x brinde)</span>
-                            <span>-</span>
+                        <div class="form-row">
+                            <div class="form-group"><label>Capacidade *</label>
+                                <select id="trocaCapacidade-${idx}"><option value="">Selecione...</option><option value="32GB">32GB</option><option value="64GB">64GB</option><option value="128GB">128GB</option><option value="256GB">256GB</option><option value="512GB">512GB</option><option value="1TB">1TB</option></select>
+                            </div>
+                            <div class="form-group"><label>Cor *</label><input type="text" id="trocaCor-${idx}" placeholder="Ex: Preto"></div>
                         </div>
-                    `;
-                }
-            });
-            
-            // Taxas
-            const forma1 = document.getElementById('forma1').value;
-            const parcelas1 = document.getElementById('parcelas1').value;
-            const valor1 = parseFloat(document.getElementById('valor1').value) || 0;
-            const taxa1 = calcularTaxa(forma1, parcelas1, valor1);
-            
-            const forma2 = document.getElementById('forma2').value;
-            const parcelas2 = document.getElementById('parcelas2').value;
-            const valor2 = parseFloat(document.getElementById('valor2').value) || 0;
-            const taxa2 = forma2 ? calcularTaxa(forma2, parcelas2, valor2) : 0;
-            
-            const taxaTotal = taxa1 + taxa2;
-            const valorRecebido = valor1 + valor2;
-            
-            if (html || totalVenda > 0) {
-                resumoDiv.classList.add('show');
-                resumoItens.innerHTML = html;
-                resumoTotal.textContent = `R$ ${totalVenda.toFixed(2)}`;
-                
-                if (taxaTotal > 0) {
-                    resumoTaxas.innerHTML = `Taxa cartao: -R$ ${taxaTotal.toFixed(2)}`;
-                } else {
-                    resumoTaxas.innerHTML = '';
-                }
-                
-                const lucroEstimado = valorRecebido - taxaTotal;
-                resumoLucro.innerHTML = `Valor liquido: R$ ${lucroEstimado.toFixed(2)}`;
+                        <div class="form-row">
+                            <div class="form-group"><label>Codigo (opcional)</label><input type="text" id="trocaCodigo-${idx}" placeholder="Ex: AP005" oninput="this.value=this.value.toUpperCase()"></div>
+                            <div class="form-group"><label>Valor da Troca (R$) *</label><input type="number" id="trocaPreco-${idx}" min="0" step="0.01" placeholder="0.00" oninput="calcularResumo()"></div>
+                        </div>
+                        <div class="form-group"><label>Observacao do aparelho de troca</label><textarea id="trocaObs-${idx}" placeholder="Ex: Tela com trinca, bateria 80%"></textarea></div>
+                    </div>
+                </div>`;
+            document.getElementById('pagamentosContainer').insertAdjacentHTML('beforeend', html);
+            calcularResumo();
+        }
+        function removerPagamento(i) { document.getElementById(`pagamento-${i}`)?.remove(); calcularResumo(); }
+
+        function onFormaChange(idx) {
+            const forma = document.getElementById(`forma-${idx}`).value;
+            const card = document.getElementById(`pagamento-${idx}`);
+            document.getElementById(`parcelasGroup-${idx}`).style.display = forma === 'Credito' ? 'block' : 'none';
+            if (forma === 'TROCA') {
+                document.getElementById(`trocaFields-${idx}`).classList.add('show');
+                card.classList.add('troca');
+                document.getElementById(`valorGroup-${idx}`).style.display = 'none';
             } else {
-                resumoDiv.classList.remove('show');
+                document.getElementById(`trocaFields-${idx}`).classList.remove('show');
+                card.classList.remove('troca');
+                document.getElementById(`valorGroup-${idx}`).style.display = 'block';
             }
+            calcularResumo();
         }
-        
-        // Enviar formulario
+
+        function calcularResumo() {
+            const content = document.getElementById('resumoContent');
+            let html = '';
+            let totalPrecoBase = 0, totalCobrado = 0, taxaTotal = 0, trocaTotal = 0;
+            const aparelhosHtml = [], acessoriosHtml = [], pagHtml = [], trocaHtml = [];
+
+            document.querySelectorAll('[id^="aparelho-"]').forEach(card => {
+                const i = card.dataset.index;
+                const cod = document.getElementById(`codAparelho-${i}`)?.value?.trim() || '';
+                const preco = parseFloat(document.getElementById(`precoAparelho-${i}`)?.value) || 0;
+                if (cod && preco > 0) { totalPrecoBase += preco; aparelhosHtml.push(`<div class="resumo-item"><span>${cod}</span><span>R$ ${preco.toFixed(2)}</span></div>`); }
+            });
+
+            document.querySelectorAll('[id^="acessorio-"]').forEach(card => {
+                const i = card.dataset.index;
+                const cod = document.getElementById(`codAcessorio-${i}`)?.value?.trim() || '';
+                const qtd = parseInt(document.getElementById(`qtdAcessorio-${i}`)?.value) || 1;
+                if (cod) acessoriosHtml.push(`<div class="resumo-item"><span class="label">${cod} (${qtd}x brinde)</span><span>-</span></div>`);
+            });
+
+            document.querySelectorAll('[id^="pagamento-"]').forEach(card => {
+                const i = card.dataset.index;
+                const forma = document.getElementById(`forma-${i}`)?.value;
+                if (!forma) return;
+                const infoEl = document.getElementById(`taxaInfo-${i}`);
+
+                if (forma === 'TROCA') {
+                    const tp = parseFloat(document.getElementById(`trocaPreco-${i}`)?.value) || 0;
+                    const tm = document.getElementById(`trocaMarca-${i}`)?.value || '';
+                    const tmod = document.getElementById(`trocaModelo-${i}`)?.value || '';
+                    trocaTotal += tp;
+                    if (tp > 0) { trocaHtml.push(`<div class="resumo-item"><span class="label">${tm} ${tmod}</span><span>R$ ${tp.toFixed(2)}</span></div>`); pagHtml.push(`<div class="resumo-item"><span>TROCA</span><span>R$ ${tp.toFixed(2)}</span></div>`); }
+                    if (infoEl) infoEl.style.display = 'none';
+                } else {
+                    const vb = parseFloat(document.getElementById(`valorBase-${i}`)?.value) || 0;
+                    const p = document.getElementById(`parcelas-${i}`)?.value;
+                    const pct = getTaxaPercent(forma, p);
+                    const tv = vb * (pct / 100);
+                    const tc = vb + tv;
+                    taxaTotal += tv; totalCobrado += tc;
+                    if (infoEl && vb > 0) {
+                        infoEl.style.display = 'block';
+                        if (pct > 0) { infoEl.className = 'taxa-info'; const pt = forma === 'Credito' ? ` ${p}x` : ''; infoEl.innerHTML = `<strong>${forma}${pt}</strong>: R$ ${vb.toFixed(2)} + ${pct}% = <strong>R$ ${tc.toFixed(2)}</strong>` + (forma === 'Credito' ? ` (${p}x de R$ ${(tc/parseInt(p)).toFixed(2)})` : ''); }
+                        else { infoEl.className = 'taxa-info green'; infoEl.innerHTML = `<strong>${forma}</strong>: R$ ${vb.toFixed(2)} (sem taxa)`; }
+                    } else if (infoEl) infoEl.style.display = 'none';
+                    if (vb > 0) { const lb = forma === 'Credito' ? `Credito ${p}x` : forma; pagHtml.push(`<div class="resumo-item"><span>${lb}: R$ ${vb.toFixed(2)} + taxa</span><span>R$ ${tc.toFixed(2)}</span></div>`); }
+                }
+            });
+
+            const tg = totalCobrado + trocaTotal;
+            if (aparelhosHtml.length > 0 || pagHtml.length > 0) {
+                html += `<div class="resumo-section"><div class="resumo-section-title">Aparelhos</div>${aparelhosHtml.join('')}</div>`;
+                if (acessoriosHtml.length) html += `<div class="resumo-section"><div class="resumo-section-title">Acessorios</div>${acessoriosHtml.join('')}</div>`;
+                html += `<div class="resumo-section"><div class="resumo-section-title">Pagamento</div>${pagHtml.join('')}</div>`;
+                if (trocaHtml.length) html += `<div class="resumo-section"><div class="resumo-section-title">Troca</div>${trocaHtml.join('')}</div>`;
+                html += `<div class="resumo-total"><span>TOTAL COBRADO:</span><span>R$ ${tg.toFixed(2)}</span></div>`;
+                if (taxaTotal > 0) html += `<div class="resumo-taxas">Taxa total: -R$ ${taxaTotal.toFixed(2)}</div>`;
+                document.getElementById('resumo').style.display = 'block';
+                content.innerHTML = html;
+            } else { document.getElementById('resumo').style.display = 'none'; }
+        }
+
         document.getElementById('formVenda').addEventListener('submit', async function(e) {
             e.preventDefault();
-            
-            // Coletar dados
-            const dataVenda = document.getElementById('dataVenda').value;
-            const vendedor = document.getElementById('vendedor').value.toUpperCase();
-            
-            // Cliente
+
             const cliente = {
-                nome: document.getElementById('clienteNome').value.toUpperCase(),
-                telefone: document.getElementById('clienteTelefone').value,
+                nome: document.getElementById('clienteNome').value,
                 cpf: document.getElementById('clienteCpf').value,
-                email: document.getElementById('clienteEmail').value,
+                telefone: document.getElementById('clienteTelefone').value,
+                email: document.getElementById('clienteEmail').value || '',
                 endereco: document.getElementById('clienteEndereco').value,
+                cep: document.getElementById('clienteCep').value || '',
                 cidade: document.getElementById('clienteCidade').value,
                 estado: document.getElementById('clienteEstado').value
             };
-            
-            // Aparelhos
+
             const aparelhos = [];
             document.querySelectorAll('[id^="aparelho-"]').forEach(card => {
-                const index = card.dataset.index;
-                const codigo = document.getElementById(`codAparelho-${index}`)?.value?.trim().toUpperCase() || '';
-                const preco = parseFloat(document.getElementById(`precoAparelho-${index}`)?.value) || 0;
-                const desconto = parseFloat(document.getElementById(`descontoAparelho-${index}`)?.value) || 0;
-                
-                if (codigo && preco > 0) {
-                    aparelhos.push({
-                        codigo: codigo,
-                        precoVenda: preco,
-                        desconto: desconto
-                    });
-                }
+                const i = card.dataset.index;
+                const cod = document.getElementById(`codAparelho-${i}`)?.value?.trim().toUpperCase();
+                const preco = parseFloat(document.getElementById(`precoAparelho-${i}`)?.value) || 0;
+                if (cod && preco > 0) aparelhos.push({ codigo: cod, precoVenda: preco });
             });
-            
-            if (aparelhos.length === 0) {
-                alert('Adicione pelo menos um aparelho com codigo e preco');
-                return;
-            }
-            
-            // Acessorios
+            if (aparelhos.length === 0) { alert('Adicione pelo menos um aparelho'); return; }
+
             const acessorios = [];
             document.querySelectorAll('[id^="acessorio-"]').forEach(card => {
-                const index = card.dataset.index;
-                const codigo = document.getElementById(`codAcessorio-${index}`)?.value?.trim().toUpperCase() || '';
-                const qtd = parseInt(document.getElementById(`qtdAcessorio-${index}`)?.value) || 1;
-                
-                if (codigo) {
-                    acessorios.push({
-                        codigo: codigo,
-                        quantidade: qtd
-                    });
-                }
+                const i = card.dataset.index;
+                const cod = document.getElementById(`codAcessorio-${i}`)?.value?.trim().toUpperCase();
+                const qtd = parseInt(document.getElementById(`qtdAcessorio-${i}`)?.value) || 1;
+                if (cod) acessorios.push({ codigo: cod, quantidade: qtd });
             });
-            
-            // Pagamento
-            const forma1 = document.getElementById('forma1').value;
-            const parcelas1 = document.getElementById('parcelas1').value;
-            const valor1 = parseFloat(document.getElementById('valor1').value) || 0;
-            
-            const forma2 = document.getElementById('forma2').value;
-            const parcelas2 = document.getElementById('parcelas2').value;
-            const valor2 = parseFloat(document.getElementById('valor2').value) || 0;
-            
-            if (!forma1 || valor1 <= 0) {
-                alert('Preencha o pagamento 1 (forma e valor)');
-                return;
-            }
-            
+
+            const pagamentos = [], trocas = [];
+            let temPag = false;
+            try {
+                document.querySelectorAll('[id^="pagamento-"]').forEach(card => {
+                    const i = card.dataset.index;
+                    const forma = document.getElementById(`forma-${i}`)?.value;
+                    if (!forma) return;
+                    if (forma === 'TROCA') {
+                        const m = document.getElementById(`trocaMarca-${i}`)?.value;
+                        const mod = document.getElementById(`trocaModelo-${i}`)?.value;
+                        const cap = document.getElementById(`trocaCapacidade-${i}`)?.value;
+                        const cor = document.getElementById(`trocaCor-${i}`)?.value;
+                        const cod = document.getElementById(`trocaCodigo-${i}`)?.value?.trim().toUpperCase() || '';
+                        const pr = parseFloat(document.getElementById(`trocaPreco-${i}`)?.value) || 0;
+                        const obs = document.getElementById(`trocaObs-${i}`)?.value || '';
+                        if (!m || !mod || !cap || !cor || pr <= 0) { alert(`Pagamento #${i}: Preencha troca`); throw 'v'; }
+                        trocas.push({ marca: m, modelo: mod, capacidade: cap, cor, codigo: cod, preco: pr, observacao: obs });
+                        pagamentos.push({ forma: 'TROCA', valorBase: pr, taxaPct: 0, taxaValor: 0, totalCobrado: pr, parcelas: '' });
+                        temPag = true;
+                    } else {
+                        const vb = parseFloat(document.getElementById(`valorBase-${i}`)?.value) || 0;
+                        const p = forma === 'Credito' ? document.getElementById(`parcelas-${i}`)?.value : '';
+                        if (vb <= 0) return;
+                        if (forma === 'Credito' && !p) { alert(`Pagamento #${i}: Parcelas`); throw 'v'; }
+                        const pct = getTaxaPercent(forma, p);
+                        const tv = Math.round(vb * (pct / 100) * 100) / 100;
+                        pagamentos.push({ forma, parcelas: p || '', valorBase: vb, taxaPct: pct, taxaValor: tv, totalCobrado: Math.round((vb + tv) * 100) / 100 });
+                        temPag = true;
+                    }
+                });
+            } catch(x) { return; }
+            if (!temPag) { alert('Adicione pagamento'); return; }
+
             const payload = {
-                dataVenda: dataVenda,
-                vendedor: vendedor,
-                cliente: cliente,
-                aparelhos: aparelhos,
-                acessorios: acessorios,
-                pagamento1: {
-                    forma: forma1,
-                    parcelas: parcelas1 || '',
-                    valor: valor1
-                },
-                pagamento2: forma2 ? {
-                    forma: forma2,
-                    parcelas: parcelas2 || '',
-                    valor: valor2
-                } : null,
-                observacao: document.getElementById('observacao').value
+                dataVenda: document.getElementById('dataVenda').value,
+                vendedor: document.getElementById('vendedor').value,
+                cliente, aparelhos, acessorios, pagamentos, trocas,
+                observacao: document.getElementById('observacao').value || ''
             };
-            
-            // Enviar
+
             document.getElementById('loading').classList.add('show');
             document.getElementById('btnSubmit').disabled = true;
             document.getElementById('alertSuccess').style.display = 'none';
             document.getElementById('alertError').style.display = 'none';
-            
+
             try {
-                const response = await fetch(WEBHOOK_URL, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(payload)
-                });
-                
+                const response = await fetch(WEBHOOK_URL, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
                 const result = await response.json();
-                
                 if (response.ok && result.success) {
-                    let msg = result.message || 'Venda registrada com sucesso!';
-                    if (result.pdfLink) {
-                        msg += ` <a href="${result.pdfLink}" target="_blank">Abrir PDF</a>`;
-                    }
-                    document.getElementById('alertSuccess').innerHTML = msg;
+                    let msg = result.message || 'Venda registrada!';
+                    if (result.pdfLink) msg += ` <a href="${result.pdfLink}" target="_blank">Abrir PDF</a>`;
                     document.getElementById('alertSuccess').style.display = 'block';
-                    
-                    // Limpar formulario
+                    document.getElementById('alertSuccess').innerHTML = msg;
                     document.getElementById('aparelhosContainer').innerHTML = '';
                     document.getElementById('acessoriosContainer').innerHTML = '';
-                    aparelhoCount = 0;
-                    acessorioCount = 0;
-                    adicionarAparelho();
-                    
-                    document.getElementById('clienteNome').value = '';
-                    document.getElementById('clienteTelefone').value = '';
-                    document.getElementById('clienteCpf').value = '';
-                    document.getElementById('clienteEmail').value = '';
-                    document.getElementById('clienteEndereco').value = '';
-                    document.getElementById('observacao').value = '';
-                    
-                    document.getElementById('forma1').value = '';
-                    document.getElementById('parcelas1').value = '';
-                    document.getElementById('valor1').value = '';
-                    document.getElementById('forma2').value = '';
-                    document.getElementById('parcelas2').value = '';
-                    document.getElementById('valor2').value = '';
-                    
-                    document.getElementById('resumo').classList.remove('show');
-                    
+                    document.getElementById('pagamentosContainer').innerHTML = '';
+                    aparelhoCount = 0; acessorioCount = 0; pagamentoCount = 0;
+                    adicionarAparelho(); adicionarPagamento();
+                    document.getElementById('resumo').style.display = 'none';
                     window.scrollTo({ top: 0, behavior: 'smooth' });
-                } else {
-                    throw new Error(result.error || result.message || 'Erro ao processar venda');
-                }
+                } else { throw new Error(result.error || result.message || 'Erro'); }
             } catch (error) {
                 document.getElementById('alertError').style.display = 'block';
                 document.getElementById('alertError').textContent = 'Erro: ' + error.message;
