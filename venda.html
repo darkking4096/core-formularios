@@ -11,20 +11,20 @@
         .header { text-align: center; margin-bottom: 30px; color: #fff; }
         .header h1 { font-size: 28px; margin-bottom: 10px; color: #e94560; }
         .header p { color: #bdc3c7; }
-        .form-card { background: #fff; border-radius: 15px; padding: 30px; box-shadow: 0 10px 40px rgba(0,0,0,0.3); margin-bottom: 20px; }
-        .section-title { font-size: 18px; font-weight: 600; color: #2c3e50; margin-bottom: 20px; padding-bottom: 10px; border-bottom: 2px solid #e94560; }
+        .form-card { background: #1e293b; border-radius: 15px; padding: 30px; box-shadow: 0 10px 40px rgba(0,0,0,0.5); margin-bottom: 20px; }
+        .section-title { font-size: 18px; font-weight: 600; color: #e2e8f0; margin-bottom: 20px; padding-bottom: 10px; border-bottom: 2px solid #e94560; }
         .form-group { margin-bottom: 20px; }
-        .form-group label { display: block; margin-bottom: 8px; font-weight: 500; color: #34495e; }
-        .form-group input, .form-group select, .form-group textarea { width: 100%; padding: 12px 15px; border: 2px solid #e0e0e0; border-radius: 8px; font-size: 15px; transition: border-color 0.3s; }
+        .form-group label { display: block; margin-bottom: 8px; font-weight: 500; color: #cbd5e1; }
+        .form-group input, .form-group select, .form-group textarea { width: 100%; padding: 12px 15px; border: 2px solid #475569; border-radius: 8px; font-size: 15px; background: #0f172a; color: #e2e8f0; transition: border-color 0.3s; }
         .form-group input:focus, .form-group select:focus, .form-group textarea:focus { outline: none; border-color: #e94560; }
-        .form-group textarea { resize: vertical; min-height: 60px; }
+        .form-group textarea { resize: vertical; min-height: 60px; background: #0f172a; color: #e2e8f0; }
         .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
         .form-row-3 { display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 15px; }
         .form-row-full { grid-column: 1 / -1; }
-        .item-card { background: #f8f9fa; border: 2px solid #e94560; border-radius: 12px; padding: 20px; margin-bottom: 15px; }
-        .item-card.acessorio { border-color: #9b59b6; background: #faf5ff; }
+        .item-card { background: #0f172a; border: 2px solid #e94560; border-radius: 12px; padding: 20px; margin-bottom: 15px; }
+        .item-card.acessorio { border-color: #9b59b6; background: #1a1030; }
         .item-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
-        .item-number { font-weight: 700; font-size: 16px; color: #2c3e50; }
+        .item-number { font-weight: 700; font-size: 16px; color: #e2e8f0; }
         .btn-remove { background: #e74c3c; color: #fff; border: none; width: 32px; height: 32px; border-radius: 50%; cursor: pointer; font-size: 18px; display: flex; align-items: center; justify-content: center; }
         .btn-remove:hover { background: #c0392b; }
         .btn-add { background: #e94560; color: #fff; border: none; padding: 12px 25px; border-radius: 8px; font-size: 15px; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; margin-bottom: 20px; width: 100%; }
@@ -33,14 +33,14 @@
         .btn-add.acessorio:hover { background: #8e44ad; }
         .btn-add.pagamento { background: #f39c12; }
         .btn-add.pagamento:hover { background: #e67e22; }
-        .pagamento-card { background: #fff9e6; border: 2px solid #f39c12; border-radius: 12px; padding: 20px; margin-bottom: 15px; }
-        .pagamento-card.troca { border-color: #e74c3c; background: #fff5f5; }
+        .pagamento-card { background: #1a1700; border: 2px solid #f39c12; border-radius: 12px; padding: 20px; margin-bottom: 15px; }
+        .pagamento-card.troca { border-color: #e74c3c; background: #1a0505; }
         .pagamento-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
-        .pagamento-title { font-weight: 600; color: #2c3e50; }
+        .pagamento-title { font-weight: 600; color: #e2e8f0; }
         .troca-fields { display: none; margin-top: 15px; padding-top: 15px; border-top: 2px dashed #e74c3c; }
         .troca-fields.show { display: block; }
-        .taxa-info { background: #fff3cd; border: 1px solid #ffc107; border-radius: 8px; padding: 10px 15px; margin-top: 10px; font-size: 13px; color: #856404; }
-        .taxa-info.green { background: #d4edda; border-color: #28a745; color: #155724; }
+        .taxa-info { background: #332b00; border: 1px solid #ffc107; border-radius: 8px; padding: 10px 15px; margin-top: 10px; font-size: 13px; color: #ffd54f; }
+        .taxa-info.green { background: #0a2e14; border-color: #28a745; color: #66bb6a; }
         .resumo { background: #2c3e50; border-radius: 12px; padding: 20px; color: #fff; margin-top: 20px; }
         .resumo-title { font-size: 16px; font-weight: 600; margin-bottom: 15px; color: #e94560; }
         .resumo-section { margin-bottom: 15px; }
@@ -61,7 +61,7 @@
         .loading.show { display: block; }
         .spinner { width: 40px; height: 40px; border: 4px solid #e0e0e0; border-top-color: #e94560; border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto 10px; }
         @keyframes spin { to { transform: rotate(360deg); } }
-        .hint { color: #7f8c8d; margin-bottom: 15px; font-size: 14px; }
+        .hint { color: #94a3b8; margin-bottom: 15px; font-size: 14px; }
         @media (max-width: 600px) { .form-row, .form-row-3 { grid-template-columns: 1fr; } }
     </style>
 </head>
@@ -112,7 +112,7 @@
                 <button type="button" class="btn-add acessorio" onclick="adicionarAcessorio()">+ Adicionar Acessorio Brinde</button>
 
                 <div class="section-title">💳 Pagamento</div>
-                <p class="hint">Informe o valor base de venda. A taxa sera calculada automaticamente.</p>
+                <p class="hint">Informe o valor cobrado do cliente. A taxa sera descontada automaticamente.</p>
                 <div id="pagamentosContainer"></div>
                 <button type="button" class="btn-add pagamento" onclick="adicionarPagamento()">+ Adicionar Forma de Pagamento</button>
 
@@ -181,11 +181,14 @@
                         <span class="item-number">Acessorio #${acessorioCount}</span>
                         <button type="button" class="btn-remove" onclick="removerAcessorio(${acessorioCount})">x</button>
                     </div>
-                    <div class="form-row">
-                        <div class="form-group"><label>Codigo do Acessorio</label><input type="text" id="codAcessorio-${acessorioCount}" placeholder="Ex: AC001" oninput="this.value=this.value.toUpperCase()"></div>
-                        <div class="form-group"><label>Quantidade</label><input type="number" id="qtdAcessorio-${acessorioCount}" min="1" value="1"></div>
+                    <div class="form-row-3">
+                        <div class="form-group"><label>Codigo do Acessorio</label><input type="text" id="codAcessorio-${acessorioCount}" placeholder="Ex: AC001" oninput="this.value=this.value.toUpperCase();calcularResumo()"></div>
+                        <div class="form-group"><label>Quantidade</label><input type="number" id="qtdAcessorio-${acessorioCount}" min="1" value="1" oninput="calcularResumo()"></div>
+                        <div class="form-group"><label>Valor Exibido (R$)</label><input type="number" id="precoAcessorio-${acessorioCount}" min="0" step="0.01" placeholder="0.00" oninput="calcularResumo()"></div>
                     </div>
                 </div>`;
+            document.getElementById('acessoriosContainer').insertAdjacentHTML('beforeend', html);
+        }
             document.getElementById('acessoriosContainer').insertAdjacentHTML('beforeend', html);
         }
         function removerAcessorio(i) { document.getElementById(`acessorio-${i}`)?.remove(); calcularResumo(); }
@@ -216,7 +219,7 @@
                                 ${Array.from({length:18}, (_, i) => `<option value="${i+1}">${i+1}x</option>`).join('')}
                             </select>
                         </div>
-                        <div class="form-group" id="valorGroup-${idx}"><label>Valor Base (R$) *</label>
+                        <div class="form-group" id="valorGroup-${idx}"><label>Valor Cobrado (R$) *</label>
                             <input type="number" id="valorBase-${idx}" min="0" step="0.01" placeholder="0.00" oninput="calcularResumo()">
                         </div>
                     </div>
@@ -280,7 +283,11 @@
                 const i = card.dataset.index;
                 const cod = document.getElementById(`codAcessorio-${i}`)?.value?.trim() || '';
                 const qtd = parseInt(document.getElementById(`qtdAcessorio-${i}`)?.value) || 1;
-                if (cod) acessoriosHtml.push(`<div class="resumo-item"><span class="label">${cod} (${qtd}x brinde)</span><span>-</span></div>`);
+                const preco = parseFloat(document.getElementById(`precoAcessorio-${i}`)?.value) || 0;
+                if (cod) {
+                    const precoText = preco > 0 ? `R$ ${preco.toFixed(2)} (brinde)` : 'brinde';
+                    acessoriosHtml.push(`<div class="resumo-item"><span class="label">${cod} (${qtd}x)</span><span>${precoText}</span></div>`);
+                }
             });
 
             document.querySelectorAll('[id^="pagamento-"]').forEach(card => {
@@ -301,14 +308,14 @@
                     const p = document.getElementById(`parcelas-${i}`)?.value;
                     const pct = getTaxaPercent(forma, p);
                     const tv = vb * (pct / 100);
-                    const tc = vb + tv;
-                    taxaTotal += tv; totalCobrado += tc;
+                    const vr = vb - tv;
+                    taxaTotal += tv; totalCobrado += vb;
                     if (infoEl && vb > 0) {
                         infoEl.style.display = 'block';
-                        if (pct > 0) { infoEl.className = 'taxa-info'; const pt = forma === 'Credito' ? ` ${p}x` : ''; infoEl.innerHTML = `<strong>${forma}${pt}</strong>: R$ ${vb.toFixed(2)} + ${pct}% = <strong>R$ ${tc.toFixed(2)}</strong>` + (forma === 'Credito' ? ` (${p}x de R$ ${(tc/parseInt(p)).toFixed(2)})` : ''); }
+                        if (pct > 0) { infoEl.className = 'taxa-info'; const pt = forma === 'Credito' ? ` ${p}x` : ''; infoEl.innerHTML = `<strong>${forma}${pt}</strong>: R$ ${vb.toFixed(2)} - ${pct}% = <strong>R$ ${vr.toFixed(2)}</strong> recebido` + (forma === 'Credito' ? ` (${p}x de R$ ${(vb/parseInt(p)).toFixed(2)} p/ cliente)` : ''); }
                         else { infoEl.className = 'taxa-info green'; infoEl.innerHTML = `<strong>${forma}</strong>: R$ ${vb.toFixed(2)} (sem taxa)`; }
                     } else if (infoEl) infoEl.style.display = 'none';
-                    if (vb > 0) { const lb = forma === 'Credito' ? `Credito ${p}x` : forma; pagHtml.push(`<div class="resumo-item"><span>${lb}: R$ ${vb.toFixed(2)} + taxa</span><span>R$ ${tc.toFixed(2)}</span></div>`); }
+                    if (vb > 0) { const lb = forma === 'Credito' ? `Credito ${p}x` : forma; pagHtml.push(`<div class="resumo-item"><span>${lb}: R$ ${vb.toFixed(2)} - taxa</span><span>R$ ${vb.toFixed(2)}</span></div>`); }
                 }
             });
 
@@ -353,7 +360,8 @@
                 const i = card.dataset.index;
                 const cod = document.getElementById(`codAcessorio-${i}`)?.value?.trim().toUpperCase();
                 const qtd = parseInt(document.getElementById(`qtdAcessorio-${i}`)?.value) || 1;
-                if (cod) acessorios.push({ codigo: cod, quantidade: qtd });
+                const precoVenda = parseFloat(document.getElementById(`precoAcessorio-${i}`)?.value) || 0;
+                if (cod) acessorios.push({ codigo: cod, quantidade: qtd, precoVenda: precoVenda });
             });
 
             const pagamentos = [], trocas = [];
@@ -382,7 +390,7 @@
                         if (forma === 'Credito' && !p) { alert(`Pagamento #${i}: Parcelas`); throw 'v'; }
                         const pct = getTaxaPercent(forma, p);
                         const tv = Math.round(vb * (pct / 100) * 100) / 100;
-                        pagamentos.push({ forma, parcelas: p || '', valorBase: vb, taxaPct: pct, taxaValor: tv, totalCobrado: Math.round((vb + tv) * 100) / 100 });
+                        pagamentos.push({ forma, parcelas: p || '', valorBase: vb, taxaPct: pct, taxaValor: tv, totalCobrado: vb });
                         temPag = true;
                     }
                 });
