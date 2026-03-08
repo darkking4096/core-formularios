@@ -153,9 +153,7 @@
     </div>
 
     <script>
-        const WEBHOOK_URL_VENDA = 'https://n8neditor.coofe.online/webhook/venda-pdf';
-        const WEBHOOK_URL_ORCAMENTO = 'https://n8neditor.coofe.online/webhook/orcamento-pdf';
-        function getWebhookUrl() { return tipoOperacao === 'ORCAMENTO' ? WEBHOOK_URL_ORCAMENTO : WEBHOOK_URL_VENDA; }
+        const WEBHOOK_URL = 'https://n8neditor.coofe.online/webhook/venda-pdf';
         let aparelhoCount = 0, acessorioCount = 0, pagamentoCount = 0;
 
         const TAXAS = {
@@ -497,7 +495,7 @@
             document.getElementById('alertError').style.display = 'none';
 
             try {
-                const response = await fetch(getWebhookUrl(), { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+                const response = await fetch(WEBHOOK_URL, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
                 const result = await response.json();
                 if (response.ok && result.success) {
                     let msg = result.message || 'Venda registrada!';
