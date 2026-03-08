@@ -62,21 +62,41 @@
         .spinner { width: 40px; height: 40px; border: 4px solid #e0e0e0; border-top-color: #e94560; border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto 10px; }
         @keyframes spin { to { transform: rotate(360deg); } }
         .hint { color: #94a3b8; margin-bottom: 15px; font-size: 14px; }
+
+        .tipo-operacao { display: flex; gap: 10px; margin-bottom: 25px; }
+        .tipo-operacao-btn { flex: 1; padding: 16px; border: 3px solid #475569; border-radius: 12px; background: #0f172a; cursor: pointer; color: #cbd5e1; text-align: center; font-weight: 700; font-size: 16px; transition: all 0.3s; }
+        .tipo-operacao-btn:hover { border-color: #bdc3c7; }
+        .tipo-operacao-btn.active-venda { background: #e94560; border-color: #e94560; color: #fff; }
+        .tipo-operacao-btn.active-orcamento { background: #f39c12; border-color: #f39c12; color: #fff; }
+        .toggle-row { display: flex; gap: 8px; margin-bottom: 10px; }
+        .toggle-btn { padding: 8px 16px; border: 2px solid #475569; border-radius: 6px; background: #0f172a; cursor: pointer; color: #cbd5e1; font-size: 13px; font-weight: 500; transition: all 0.3s; }
+        .toggle-btn:hover { border-color: #bdc3c7; }
+        .toggle-btn.active-novo { background: #27ae60; border-color: #27ae60; color: #fff; }
+        .toggle-btn.active-semi { background: #e67e22; border-color: #e67e22; color: #fff; }
+        .orcamento-badge { background: #f39c12; color: #000; padding: 5px 15px; border-radius: 20px; font-weight: 700; font-size: 14px; display: inline-block; margin-left: 10px; }
+        .orcamento-fields { display: none; }
+        .orcamento-fields.show { display: block; }
         @media (max-width: 600px) { .form-row, .form-row-3 { grid-template-columns: 1fr; } }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="header">
-            <h1>🧾 Venda com Recibo PDF</h1>
-            <p>Core Distribuidora - Venda com geração de recibo</p>
+            <h1>🧾 Venda / Orçamento com PDF</h1>
+            <p>Core Distribuidora - Venda ou Orçamento com geração de PDF</p>
         </div>
         <div class="form-card">
             <div class="alert alert-success" id="alertSuccess"></div>
             <div class="alert alert-error" id="alertError"></div>
             <form id="formVenda">
 
-                <div class="section-title">📅 Dados da Venda</div>
+                <div class="section-title">📋 Tipo de Operação</div>
+                <div class="tipo-operacao">
+                    <button type="button" class="tipo-operacao-btn active-venda" id="btnTipoVenda" onclick="setTipoOperacao('VENDA')">🧾 VENDA</button>
+                    <button type="button" class="tipo-operacao-btn" id="btnTipoOrcamento" onclick="setTipoOperacao('ORCAMENTO')">📋 ORÇAMENTO</button>
+                </div>
+
+                <div class="section-title" id="titleDadosVenda">📅 Dados da Venda</div>
                 <div class="form-row">
                     <div class="form-group"><label>Data da Venda *</label><input type="date" id="dataVenda" required></div>
                     <div class="form-group"><label>Vendedor *</label><input type="text" id="vendedor" placeholder="Nome do vendedor" required></div>
@@ -133,13 +153,45 @@
     </div>
 
     <script>
-        const WEBHOOK_URL = 'https://n8neditor.coofe.online/webhook/venda-pdf';
+        const WEBHOOK_URL_VENDA = 'https://n8neditor.coofe.online/webhook/venda-pdf';
+        const WEBHOOK_URL_ORCAMENTO = 'https://n8neditor.coofe.online/webhook/orcamento-pdf';
+        function getWebhookUrl() { return tipoOperacao === 'ORCAMENTO' ? WEBHOOK_URL_ORCAMENTO : WEBHOOK_URL_VENDA; }
         let aparelhoCount = 0, acessorioCount = 0, pagamentoCount = 0;
 
         const TAXAS = {
             'Dinheiro': 0, 'PIX': 0, 'PIX QR Code': 0.99, 'Debito': 1.69,
             'Credito': {1:3.89,2:5.51,3:6.27,4:7.02,5:7.77,6:8.53,7:9.78,8:10.53,9:11.29,10:12.04,11:12.80,12:13.55,13:14.49,14:15.25,15:16.00,16:16.75,17:17.51,18:18.26}
         };
+
+        let tipoOperacao = 'VENDA';
+
+        function setTipoOperacao(tipo) {
+            tipoOperacao = tipo;
+            const btnV = document.getElementById('btnTipoVenda');
+            const btnO = document.getElementById('btnTipoOrcamento');
+            const titleDados = document.getElementById('titleDadosVenda');
+            const submitBtn = document.getElementById('btnSubmit');
+            
+            if (tipo === 'ORCAMENTO') {
+                btnV.className = 'tipo-operacao-btn';
+                btnO.className = 'tipo-operacao-btn active-orcamento';
+                titleDados.textContent = '📅 Dados do Orçamento';
+                submitBtn.textContent = 'GERAR ORÇAMENTO PDF';
+                submitBtn.style.background = 'linear-gradient(135deg, #f39c12, #e67e22)';
+            } else {
+                btnV.className = 'tipo-operacao-btn active-venda';
+                btnO.className = 'tipo-operacao-btn';
+                titleDados.textContent = '📅 Dados da Venda';
+                submitBtn.textContent = 'REGISTRAR VENDA E GERAR RECIBO';
+                submitBtn.style.background = 'linear-gradient(135deg, #e94560, #c23a51)';
+            }
+            // Toggle orcamento fields visibility
+            document.querySelectorAll('.orcamento-fields').forEach(el => {
+                el.classList.toggle('show', tipo === 'ORCAMENTO');
+            });
+            // Rebuild aparelhos to update labels
+            calcularResumo();
+        }
 
         function getTaxaPercent(forma, parcelas) {
             if (!forma || forma === 'TROCA') return 0;
@@ -158,23 +210,42 @@
 
         function adicionarAparelho() {
             aparelhoCount++;
+            const isOrcamento = tipoOperacao === 'ORCAMENTO';
             const html = `
                 <div class="item-card" id="aparelho-${aparelhoCount}" data-index="${aparelhoCount}">
                     <div class="item-header">
                         <span class="item-number">Aparelho #${aparelhoCount}</span>
                         ${aparelhoCount > 1 ? `<button type="button" class="btn-remove" onclick="removerAparelho(${aparelhoCount})">x</button>` : ''}
                     </div>
+                    <div class="toggle-row">
+                        <button type="button" class="toggle-btn active-novo" id="btnNovo-${aparelhoCount}" onclick="setCondicao(${aparelhoCount},'novo')">NOVO</button>
+                        <button type="button" class="toggle-btn" id="btnSemi-${aparelhoCount}" onclick="setCondicao(${aparelhoCount},'seminovo')">SEMI-NOVO</button>
+                        <input type="hidden" id="condicao-${aparelhoCount}" value="novo">
+                    </div>
                     <div class="form-row">
                         <div class="form-group"><label>Codigo do Produto *</label><input type="text" id="codAparelho-${aparelhoCount}" placeholder="Ex: AP001-001" oninput="this.value=this.value.toUpperCase();calcularResumo()"></div>
-                        <div class="form-group"><label>Preco Base de Venda (R$) *</label><input type="number" id="precoAparelho-${aparelhoCount}" min="0" step="0.01" placeholder="0.00" oninput="calcularResumo()"></div>
+                        <div class="form-group"><label>${isOrcamento ? 'Valor Unitario (R$) *' : 'Preco Base de Venda (R$) *'}</label><input type="number" id="precoAparelho-${aparelhoCount}" min="0" step="0.01" placeholder="0.00" oninput="calcularResumo()"></div>
+                    </div>
+                    <div class="form-row orcamento-fields ${isOrcamento ? 'show' : ''}" id="orcFields-${aparelhoCount}">
+                        <div class="form-group"><label>Quantidade *</label><input type="number" id="qtdAparelho-${aparelhoCount}" min="1" value="1" oninput="calcularResumo()"></div>
+                        <div class="form-group"><label>Desconto (R$)</label><input type="number" id="descontoAparelho-${aparelhoCount}" min="0" step="0.01" value="0" oninput="calcularResumo()"></div>
                     </div>
                 </div>`;
             document.getElementById('aparelhosContainer').insertAdjacentHTML('beforeend', html);
+        }
+
+        function setCondicao(idx, condicao) {
+            document.getElementById('condicao-' + idx).value = condicao;
+            const btnNovo = document.getElementById('btnNovo-' + idx);
+            const btnSemi = document.getElementById('btnSemi-' + idx);
+            btnNovo.className = 'toggle-btn' + (condicao === 'novo' ? ' active-novo' : '');
+            btnSemi.className = 'toggle-btn' + (condicao === 'seminovo' ? ' active-semi' : '');
         }
         function removerAparelho(i) { document.getElementById(`aparelho-${i}`)?.remove(); calcularResumo(); }
 
         function adicionarAcessorio() {
             acessorioCount++;
+            const isOrcamento = tipoOperacao === 'ORCAMENTO';
             const html = `
                 <div class="item-card acessorio" id="acessorio-${acessorioCount}" data-index="${acessorioCount}">
                     <div class="item-header">
@@ -182,9 +253,9 @@
                         <button type="button" class="btn-remove" onclick="removerAcessorio(${acessorioCount})">x</button>
                     </div>
                     <div class="form-row-3">
-                        <div class="form-group"><label>Codigo do Acessorio</label><input type="text" id="codAcessorio-${acessorioCount}" placeholder="Ex: AC001" oninput="this.value=this.value.toUpperCase();calcularResumo()"></div>
+                        <div class="form-group"><label>${isOrcamento ? 'Descricao do Acessorio *' : 'Codigo do Acessorio'}</label><input type="text" id="codAcessorio-${acessorioCount}" placeholder="${isOrcamento ? 'Ex: Capinha Transparente' : 'Ex: AC001'}" oninput="${isOrcamento ? '' : 'this.value=this.value.toUpperCase();'}calcularResumo()"></div>
                         <div class="form-group"><label>Quantidade</label><input type="number" id="qtdAcessorio-${acessorioCount}" min="1" value="1" oninput="calcularResumo()"></div>
-                        <div class="form-group"><label>Valor Exibido (R$)</label><input type="number" id="precoAcessorio-${acessorioCount}" min="0" step="0.01" placeholder="0.00" oninput="calcularResumo()"></div>
+                        <div class="form-group"><label>${isOrcamento ? 'Valor Unitario (R$) *' : 'Valor Exibido (R$)'}</label><input type="number" id="precoAcessorio-${acessorioCount}" min="0" step="0.01" placeholder="0.00" oninput="calcularResumo()"></div>
                     </div>
                 </div>`;
             document.getElementById('acessoriosContainer').insertAdjacentHTML('beforeend', html);
@@ -395,7 +466,25 @@
             } catch(x) { return; }
             if (!temPag) { alert('Adicione pagamento'); return; }
 
+            // Collect aparelhos with condicao
+            aparelhos.forEach((ap, idx) => {
+                const cards = document.querySelectorAll('[id^="aparelho-"]');
+                const card = Array.from(cards).find(c => {
+                    const ci = c.dataset.index;
+                    return document.getElementById('codAparelho-' + ci)?.value?.trim().toUpperCase() === ap.codigo;
+                });
+                if (card) {
+                    const ci = card.dataset.index;
+                    ap.condicao = document.getElementById('condicao-' + ci)?.value || 'novo';
+                    if (tipoOperacao === 'ORCAMENTO') {
+                        ap.quantidade = parseInt(document.getElementById('qtdAparelho-' + ci)?.value) || 1;
+                        ap.desconto = parseFloat(document.getElementById('descontoAparelho-' + ci)?.value) || 0;
+                    }
+                }
+            });
+
             const payload = {
+                tipoOperacao: tipoOperacao,
                 dataVenda: document.getElementById('dataVenda').value,
                 vendedor: document.getElementById('vendedor').value,
                 cliente, aparelhos, acessorios, pagamentos, trocas,
@@ -408,7 +497,7 @@
             document.getElementById('alertError').style.display = 'none';
 
             try {
-                const response = await fetch(WEBHOOK_URL, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+                const response = await fetch(getWebhookUrl(), { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
                 const result = await response.json();
                 if (response.ok && result.success) {
                     let msg = result.message || 'Venda registrada!';
