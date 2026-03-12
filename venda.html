@@ -305,13 +305,11 @@
                         <span class="item-number">Acessorio #${acessorioCount}</span>
                         <button type="button" class="btn-remove" onclick="removerAcessorio(${acessorioCount})">x</button>
                     </div>
-                    ${!isOrcamento ? `
                     <div class="toggle-row" style="margin-bottom:12px;">
                         <button type="button" class="toggle-btn" id="btnBrinde-${acessorioCount}" onclick="setTipoAcessorio(${acessorioCount},'brinde')" style="flex:1;padding:8px 16px;border:2px solid #9b59b6;border-radius:6px;background:#9b59b6;cursor:pointer;color:#fff;font-size:13px;font-weight:600;">🎁 BRINDE</button>
                         <button type="button" class="toggle-btn" id="btnVendaAc-${acessorioCount}" onclick="setTipoAcessorio(${acessorioCount},'venda')" style="flex:1;padding:8px 16px;border:2px solid #475569;border-radius:6px;background:#0f172a;cursor:pointer;color:#cbd5e1;font-size:13px;font-weight:600;">💰 VENDA</button>
                         <input type="hidden" id="tipoAcessorio-${acessorioCount}" value="brinde">
                     </div>
-                    ` : '<input type="hidden" id="tipoAcessorio-' + acessorioCount + '" value="brinde">'}
                     <div class="form-row-3">
                         <div class="form-group"><label>${isOrcamento ? 'Descricao do Acessorio *' : 'Codigo do Acessorio'}</label><input type="text" id="codAcessorio-${acessorioCount}" placeholder="${isOrcamento ? 'Ex: CAPINHA TRANSPARENTE' : 'Ex: AC001'}" oninput="${isOrcamento ? 'this.value=this.value.toUpperCase();' : 'this.value=this.value.toUpperCase();'}calcularResumo()"></div>
                         <div class="form-group"><label>Quantidade</label><input type="number" id="qtdAcessorio-${acessorioCount}" min="1" value="1" oninput="calcularResumo()"></div>
