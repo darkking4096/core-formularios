@@ -87,10 +87,10 @@
         const WEBHOOK_URL = 'https://n8neditor.coofe.online/webhook/compra-acessorios';
         let acessorioCount = 0;
         const tiposAcessorios = [
-            'Fone com fio', 'Fone Bluetooth', 'Capinha', 'Película', 'Carregador',
-            'Cabo', 'Power Bank', 'Suporte Veicular', 'Caixa de Som',
-            'Smartwatch', 'Relogio', 'Fonte', 'Adaptador', 'Capa transparente',
-            'Película 3D', 'Microfone', 'Outro'
+            'FONE COM FIO', 'FONE BLUETOOTH', 'CAPINHA', 'PELÍCULA', 'CARREGADOR',
+            'CABO', 'POWER BANK', 'SUPORTE VEICULAR', 'CAIXA DE SOM',
+            'SMARTWATCH', 'RELOGIO', 'FONTE', 'ADAPTADOR', 'CAPA TRANSPARENTE',
+            'PELÍCULA 3D', 'MICROFONE', 'OUTRO'
         ];
 
         document.addEventListener('DOMContentLoaded', function() {
@@ -130,7 +130,7 @@
                             </div>
                             <div class="form-group">
                                 <label>Descricao</label>
-                                <input type="text" id="descricao-${acessorioCount}" placeholder="Ex: Capinha iPhone 15 Pro" oninput="atualizarResumo()">
+                                <input type="text" id="descricao-${acessorioCount}" placeholder="Ex: CAPINHA IPHONE 15 PRO" oninput="this.value=this.value.toUpperCase();atualizarResumo()">
                             </div>
                         </div>
                     </div>
