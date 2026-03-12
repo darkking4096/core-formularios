@@ -60,6 +60,7 @@
         .spinner { width: 40px; height: 40px; border: 4px solid #e0e0e0; border-top-color: #3498db; border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto 10px; }
         @keyframes spin { to { transform: rotate(360deg); } }
         .hint { color: #94a3b8; margin-bottom: 15px; font-size: 14px; }
+        .toggle-row { display: flex; gap: 8px; }
         @media (max-width: 600px) { .form-row, .form-row-3 { grid-template-columns: 1fr; } }
     </style>
 </head>
@@ -84,10 +85,10 @@
                 <div id="aparelhosContainer"></div>
                 <button type="button" class="btn-add" onclick="adicionarAparelho()">+ Adicionar Aparelho</button>
 
-                <div class="section-title">Acessorios Brinde (opcional)</div>
-                <p class="hint">Informe o codigo do acessorio se houver brinde</p>
+                <div class="section-title">🎁 Acessorios (Brinde / Venda)</div>
+                <p class="hint">Brinde = desconto no PDF | Venda = valor a cobrar do cliente</p>
                 <div id="acessoriosContainer"></div>
-                <button type="button" class="btn-add acessorio" onclick="adicionarAcessorio()">+ Adicionar Acessorio Brinde</button>
+                <button type="button" class="btn-add acessorio" onclick="adicionarAcessorio()">+ Adicionar Acessorio</button>
 
                 <div class="section-title">Pagamento</div>
                 <p class="hint">Informe o valor cobrado do cliente. A taxa sera descontada automaticamente.</p>
@@ -162,6 +163,11 @@
                         <span class="item-number">Acessorio #${acessorioCount}</span>
                         <button type="button" class="btn-remove" onclick="removerAcessorio(${acessorioCount})">x</button>
                     </div>
+                    <div class="toggle-row" style="margin-bottom:12px;">
+                        <button type="button" class="toggle-btn active-brinde" id="btnBrinde-${acessorioCount}" onclick="setTipoAcessorio(${acessorioCount},'brinde')" style="flex:1;padding:8px 16px;border:2px solid #9b59b6;border-radius:6px;background:#9b59b6;cursor:pointer;color:#fff;font-size:13px;font-weight:600;">🎁 BRINDE</button>
+                        <button type="button" class="toggle-btn" id="btnVendaAc-${acessorioCount}" onclick="setTipoAcessorio(${acessorioCount},'venda')" style="flex:1;padding:8px 16px;border:2px solid #475569;border-radius:6px;background:#0f172a;cursor:pointer;color:#cbd5e1;font-size:13px;font-weight:600;">💰 VENDA</button>
+                        <input type="hidden" id="tipoAcessorio-${acessorioCount}" value="brinde">
+                    </div>
                     <div class="form-row-3">
                         <div class="form-group">
                             <label>Codigo do Acessorio</label>
@@ -177,6 +183,22 @@
                         </div>
                     </div>
                 </div>`;
+            document.getElementById('acessoriosContainer').insertAdjacentHTML('beforeend', html);
+        }
+
+        function setTipoAcessorio(idx, tipo) {
+            document.getElementById('tipoAcessorio-' + idx).value = tipo;
+            const btnBrinde = document.getElementById('btnBrinde-' + idx);
+            const btnVenda = document.getElementById('btnVendaAc-' + idx);
+            if (tipo === 'brinde') {
+                btnBrinde.style.background = '#9b59b6'; btnBrinde.style.borderColor = '#9b59b6'; btnBrinde.style.color = '#fff';
+                btnVenda.style.background = '#0f172a'; btnVenda.style.borderColor = '#475569'; btnVenda.style.color = '#cbd5e1';
+            } else {
+                btnVenda.style.background = '#27ae60'; btnVenda.style.borderColor = '#27ae60'; btnVenda.style.color = '#fff';
+                btnBrinde.style.background = '#0f172a'; btnBrinde.style.borderColor = '#475569'; btnBrinde.style.color = '#cbd5e1';
+            }
+            calcularResumo();
+        }
             document.getElementById('acessoriosContainer').insertAdjacentHTML('beforeend', html);
         }
         function removerAcessorio(i) { document.getElementById(`acessorio-${i}`)?.remove(); calcularResumo(); }
@@ -318,16 +340,25 @@
                 }
             });
 
-            // Acessorios brinde
-            const acessoriosHtml = [];
+            // Acessorios brinde e venda
+            const acessoriosBrindeHtml = [];
+            const acessoriosVendaHtml = [];
+            let totalAcessoriosVenda = 0;
             document.querySelectorAll('[id^="acessorio-"]').forEach(card => {
                 const i = card.dataset.index;
                 const cod = document.getElementById(`codAcessorio-${i}`)?.value?.trim() || '';
                 const qtd = parseInt(document.getElementById(`qtdAcessorio-${i}`)?.value) || 1;
                 const preco = parseFloat(document.getElementById(`precoAcessorio-${i}`)?.value) || 0;
+                const tipo = document.getElementById(`tipoAcessorio-${i}`)?.value || 'brinde';
                 if (cod) {
-                    const precoText = preco > 0 ? `R$ ${preco.toFixed(2)} (brinde)` : 'brinde';
-                    acessoriosHtml.push(`<div class="resumo-item"><span class="label">${cod} (${qtd}x)</span><span>${precoText}</span></div>`);
+                    if (tipo === 'venda') {
+                        const subtotal = preco * qtd;
+                        totalAcessoriosVenda += subtotal;
+                        acessoriosVendaHtml.push(`<div class="resumo-item"><span class="label">${cod} (${qtd}x) - VENDA</span><span>R$ ${subtotal.toFixed(2)}</span></div>`);
+                    } else {
+                        const precoText = preco > 0 ? `R$ ${preco.toFixed(2)} (brinde)` : 'brinde';
+                        acessoriosBrindeHtml.push(`<div class="resumo-item"><span class="label">${cod} (${qtd}x)</span><span>${precoText}</span></div>`);
+                    }
                 }
             });
 
@@ -385,11 +416,12 @@
                 }
             });
 
-            const totalGeralCobrado = totalCobrado + trocaTotal;
+            const totalGeralCobrado = totalCobrado + trocaTotal + totalAcessoriosVenda;
 
             if (aparelhosHtml.length > 0 || pagHtml.length > 0) {
                 html += `<div class="resumo-section"><div class="resumo-section-title">Aparelhos</div>${aparelhosHtml.join('')}</div>`;
-                if (acessoriosHtml.length > 0) html += `<div class="resumo-section"><div class="resumo-section-title">Acessorios Brinde</div>${acessoriosHtml.join('')}</div>`;
+                if (acessoriosBrindeHtml.length > 0) html += `<div class="resumo-section"><div class="resumo-section-title">Acessorios Brinde</div>${acessoriosBrindeHtml.join('')}</div>`;
+                if (acessoriosVendaHtml.length > 0) html += `<div class="resumo-section"><div class="resumo-section-title">Acessorios Venda</div>${acessoriosVendaHtml.join('')}</div>`;
                 html += `<div class="resumo-section"><div class="resumo-section-title">Pagamento</div>${pagHtml.join('')}</div>`;
                 if (trocaHtml.length > 0) html += `<div class="resumo-section"><div class="resumo-section-title">Aparelho(s) de Troca</div>${trocaHtml.join('')}</div>`;
                 html += `<div class="resumo-total"><span>TOTAL COBRADO:</span><span>R$ ${totalGeralCobrado.toFixed(2)}</span></div>`;
@@ -424,7 +456,8 @@
                 const cod = document.getElementById(`codAcessorio-${i}`)?.value?.trim().toUpperCase();
                 const qtd = parseInt(document.getElementById(`qtdAcessorio-${i}`)?.value) || 1;
                 const precoVenda = parseFloat(document.getElementById(`precoAcessorio-${i}`)?.value) || 0;
-                if (cod) acessorios.push({ codigo: cod, quantidade: qtd, precoVenda: precoVenda });
+                const tipoAc = document.getElementById(`tipoAcessorio-${i}`)?.value || 'brinde';
+                if (cod) acessorios.push({ codigo: cod, quantidade: qtd, precoVenda: precoVenda, modalidade: tipoAc });
             });
 
             // Coletar pagamentos
