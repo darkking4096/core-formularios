@@ -199,8 +199,6 @@
             }
             calcularResumo();
         }
-            document.getElementById('acessoriosContainer').insertAdjacentHTML('beforeend', html);
-        }
         function removerAcessorio(i) { document.getElementById(`acessorio-${i}`)?.remove(); calcularResumo(); }
 
         // ---- PAGAMENTOS ----
@@ -416,7 +414,7 @@
                 }
             });
 
-            const totalGeralCobrado = totalCobrado + trocaTotal + totalAcessoriosVenda;
+            const totalGeralCobrado = totalCobrado + trocaTotal;
 
             if (aparelhosHtml.length > 0 || pagHtml.length > 0) {
                 html += `<div class="resumo-section"><div class="resumo-section-title">Aparelhos</div>${aparelhosHtml.join('')}</div>`;
