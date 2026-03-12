@@ -106,7 +106,7 @@
                 <div class="form-row">
                     <div class="form-group" style="grid-column:span 2"><label>Nome Completo *</label><input type="text" id="clienteNome" placeholder="Nome completo" required></div>
                     <div class="form-group"><label>Telefone *</label><input type="tel" id="clienteTelefone" placeholder="(62) 99999-9999" required></div>
-                    <div class="form-group"><label>CPF *</label><input type="text" id="clienteCpf" placeholder="000.000.000-00" required></div>
+                    <div class="form-group"><label>CPF/CNPJ *</label><input type="text" id="clienteCpf" placeholder="CPF ou CNPJ" required oninput="mascaraCpfCnpj(this)"></div>
                 </div>
                 <div class="form-row">
                     <div class="form-group" style="grid-column:span 2"><label>E-mail</label><input type="email" id="clienteEmail" placeholder="email@exemplo.com"></div>
@@ -127,14 +127,24 @@
                 <div id="aparelhosContainer"></div>
                 <button type="button" class="btn-add" onclick="adicionarAparelho()">+ Adicionar Aparelho</button>
 
-                <div class="section-title">🎁 Acessorios Brinde (opcional)</div>
+                <div class="section-title">🎁 Acessorios (Brinde / Venda)</div>
+                <p class="hint">Brinde = desconto no PDF | Venda = valor a cobrar do cliente</p>
                 <div id="acessoriosContainer"></div>
-                <button type="button" class="btn-add acessorio" onclick="adicionarAcessorio()">+ Adicionar Acessorio Brinde</button>
+                <button type="button" class="btn-add acessorio" onclick="adicionarAcessorio()">+ Adicionar Acessorio</button>
 
-                <div class="section-title">💳 Pagamento</div>
-                <p class="hint">Informe o valor cobrado do cliente. A taxa sera descontada automaticamente.</p>
-                <div id="pagamentosContainer"></div>
-                <button type="button" class="btn-add pagamento" onclick="adicionarPagamento()">+ Adicionar Forma de Pagamento</button>
+                <div id="vendaPagSection">
+                    <div class="section-title">💳 Pagamento</div>
+                    <p class="hint">Informe o valor cobrado do cliente. A taxa sera descontada automaticamente.</p>
+                    <div id="pagamentosContainer"></div>
+                    <button type="button" class="btn-add pagamento" onclick="adicionarPagamento()">+ Adicionar Forma de Pagamento</button>
+                </div>
+
+                <div id="orcPagSection" style="display:none;">
+                    <div class="section-title" style="border-color:#f39c12;">💳 Condições de Pagamento (Orçamento)</div>
+                    <p class="hint">Adicione as opções de pagamento com valores e taxas negociadas. Ex: "3X Cartão" = R$ 6.650 | "PIX" = R$ 6.200</p>
+                    <div id="orcPagContainer"></div>
+                    <button type="button" class="btn-add pagamento" onclick="adicionarOrcPagamento()">+ Adicionar Condição de Pagamento</button>
+                </div>
 
                 <div class="section-title">📝 Observação</div>
                 <div class="form-group">
@@ -154,7 +164,7 @@
 
     <script>
         const WEBHOOK_URL = 'https://n8neditor.coofe.online/webhook/venda-pdf';
-        let aparelhoCount = 0, acessorioCount = 0, pagamentoCount = 0;
+        let aparelhoCount = 0, acessorioCount = 0, pagamentoCount = 0, orcPagCount = 0;
 
         const TAXAS = {
             'Dinheiro': 0, 'PIX': 0, 'PIX QR Code': 0.99, 'Debito': 1.69,
@@ -162,6 +172,22 @@
         };
 
         let tipoOperacao = 'VENDA';
+
+        function mascaraCpfCnpj(el) {
+            let v = el.value.replace(/\D/g, '');
+            if (v.length <= 11) {
+                v = v.replace(/(\d{3})(\d)/, '$1.$2');
+                v = v.replace(/(\d{3})(\d)/, '$1.$2');
+                v = v.replace(/(\d{3})(\d{1,2})$/, '$1-$2');
+            } else {
+                v = v.substring(0, 14);
+                v = v.replace(/^(\d{2})(\d)/, '$1.$2');
+                v = v.replace(/^(\d{2})\.(\d{3})(\d)/, '$1.$2.$3');
+                v = v.replace(/\.(\d{3})(\d)/, '.$1/$2');
+                v = v.replace(/(\d{4})(\d{1,2})$/, '$1-$2');
+            }
+            el.value = v;
+        }
 
         function setTipoOperacao(tipo) {
             tipoOperacao = tipo;
@@ -183,11 +209,17 @@
                 submitBtn.textContent = 'REGISTRAR VENDA E GERAR RECIBO';
                 submitBtn.style.background = 'linear-gradient(135deg, #e94560, #c23a51)';
             }
-            // Toggle orcamento fields visibility
-            document.querySelectorAll('.orcamento-fields').forEach(el => {
-                el.classList.toggle('show', tipo === 'ORCAMENTO');
-            });
-            // Rebuild aparelhos to update labels
+            // Rebuild form based on type
+            document.getElementById('aparelhosContainer').innerHTML = '';
+            document.getElementById('acessoriosContainer').innerHTML = '';
+            document.getElementById('pagamentosContainer').innerHTML = '';
+            aparelhoCount = 0; acessorioCount = 0; pagamentoCount = 0;
+            adicionarAparelho();
+            if (tipo === 'VENDA') adicionarPagamento();
+            // Toggle orcamento fields
+            document.querySelectorAll('.orcamento-fields').forEach(el => el.classList.toggle('show', tipo === 'ORCAMENTO'));
+            document.getElementById('orcPagSection').style.display = tipo === 'ORCAMENTO' ? 'block' : 'none';
+            document.getElementById('vendaPagSection').style.display = tipo === 'VENDA' ? 'block' : 'none';
             calcularResumo();
         }
 
@@ -204,12 +236,37 @@
             document.getElementById('dataVenda').value = new Date().toISOString().split('T')[0];
             adicionarAparelho();
             adicionarPagamento();
+            document.getElementById('orcPagSection').style.display = 'none';
         });
 
+        // ---- APARELHOS ----
         function adicionarAparelho() {
             aparelhoCount++;
             const isOrcamento = tipoOperacao === 'ORCAMENTO';
-            const html = `
+            let html;
+            if (isOrcamento) {
+                // Orçamento: campo livre para modelo, marca, etc (sem precisar do estoque)
+                html = `
+                <div class="item-card" id="aparelho-${aparelhoCount}" data-index="${aparelhoCount}" style="border-color:#f39c12;">
+                    <div class="item-header">
+                        <span class="item-number">Item #${aparelhoCount}</span>
+                        ${aparelhoCount > 1 ? `<button type="button" class="btn-remove" onclick="removerAparelho(${aparelhoCount})">x</button>` : ''}
+                    </div>
+                    <div class="toggle-row">
+                        <button type="button" class="toggle-btn active-novo" id="btnNovo-${aparelhoCount}" onclick="setCondicao(${aparelhoCount},'novo')">NOVO</button>
+                        <button type="button" class="toggle-btn" id="btnSemi-${aparelhoCount}" onclick="setCondicao(${aparelhoCount},'seminovo')">SEMI-NOVO</button>
+                        <input type="hidden" id="condicao-${aparelhoCount}" value="novo">
+                    </div>
+                    <div class="form-group"><label>Descricao do Produto *</label><input type="text" id="descAparelho-${aparelhoCount}" placeholder="Ex: REDMI Pad 2 256/8" oninput="this.value=this.value.toUpperCase();calcularResumo()"></div>
+                    <div class="form-row">
+                        <div class="form-group"><label>Quantidade *</label><input type="number" id="qtdAparelho-${aparelhoCount}" min="1" value="1" oninput="calcularResumo()"></div>
+                        <div class="form-group"><label>Valor Unitario (R$) *</label><input type="number" id="precoAparelho-${aparelhoCount}" min="0" step="0.01" placeholder="0.00" oninput="calcularResumo()"></div>
+                    </div>
+                    <div class="form-group"><label>Desconto (R$)</label><input type="number" id="descontoAparelho-${aparelhoCount}" min="0" step="0.01" value="0" oninput="calcularResumo()"></div>
+                </div>`;
+            } else {
+                // Venda: requer código do estoque
+                html = `
                 <div class="item-card" id="aparelho-${aparelhoCount}" data-index="${aparelhoCount}">
                     <div class="item-header">
                         <span class="item-number">Aparelho #${aparelhoCount}</span>
@@ -222,13 +279,10 @@
                     </div>
                     <div class="form-row">
                         <div class="form-group"><label>Codigo do Produto *</label><input type="text" id="codAparelho-${aparelhoCount}" placeholder="Ex: AP001-001" oninput="this.value=this.value.toUpperCase();calcularResumo()"></div>
-                        <div class="form-group"><label>${isOrcamento ? 'Valor Unitario (R$) *' : 'Preco Base de Venda (R$) *'}</label><input type="number" id="precoAparelho-${aparelhoCount}" min="0" step="0.01" placeholder="0.00" oninput="calcularResumo()"></div>
-                    </div>
-                    <div class="form-row orcamento-fields ${isOrcamento ? 'show' : ''}" id="orcFields-${aparelhoCount}">
-                        <div class="form-group"><label>Quantidade *</label><input type="number" id="qtdAparelho-${aparelhoCount}" min="1" value="1" oninput="calcularResumo()"></div>
-                        <div class="form-group"><label>Desconto (R$)</label><input type="number" id="descontoAparelho-${aparelhoCount}" min="0" step="0.01" value="0" oninput="calcularResumo()"></div>
+                        <div class="form-group"><label>Preco Base de Venda (R$) *</label><input type="number" id="precoAparelho-${aparelhoCount}" min="0" step="0.01" placeholder="0.00" oninput="calcularResumo()"></div>
                     </div>
                 </div>`;
+            }
             document.getElementById('aparelhosContainer').insertAdjacentHTML('beforeend', html);
         }
 
@@ -241,6 +295,7 @@
         }
         function removerAparelho(i) { document.getElementById(`aparelho-${i}`)?.remove(); calcularResumo(); }
 
+        // ---- ACESSORIOS (Brinde/Venda) ----
         function adicionarAcessorio() {
             acessorioCount++;
             const isOrcamento = tipoOperacao === 'ORCAMENTO';
@@ -250,16 +305,38 @@
                         <span class="item-number">Acessorio #${acessorioCount}</span>
                         <button type="button" class="btn-remove" onclick="removerAcessorio(${acessorioCount})">x</button>
                     </div>
+                    ${!isOrcamento ? `
+                    <div class="toggle-row" style="margin-bottom:12px;">
+                        <button type="button" class="toggle-btn" id="btnBrinde-${acessorioCount}" onclick="setTipoAcessorio(${acessorioCount},'brinde')" style="flex:1;padding:8px 16px;border:2px solid #9b59b6;border-radius:6px;background:#9b59b6;cursor:pointer;color:#fff;font-size:13px;font-weight:600;">🎁 BRINDE</button>
+                        <button type="button" class="toggle-btn" id="btnVendaAc-${acessorioCount}" onclick="setTipoAcessorio(${acessorioCount},'venda')" style="flex:1;padding:8px 16px;border:2px solid #475569;border-radius:6px;background:#0f172a;cursor:pointer;color:#cbd5e1;font-size:13px;font-weight:600;">💰 VENDA</button>
+                        <input type="hidden" id="tipoAcessorio-${acessorioCount}" value="brinde">
+                    </div>
+                    ` : '<input type="hidden" id="tipoAcessorio-' + acessorioCount + '" value="brinde">'}
                     <div class="form-row-3">
-                        <div class="form-group"><label>${isOrcamento ? 'Descricao do Acessorio *' : 'Codigo do Acessorio'}</label><input type="text" id="codAcessorio-${acessorioCount}" placeholder="${isOrcamento ? 'Ex: Capinha Transparente' : 'Ex: AC001'}" oninput="${isOrcamento ? '' : 'this.value=this.value.toUpperCase();'}calcularResumo()"></div>
+                        <div class="form-group"><label>${isOrcamento ? 'Descricao do Acessorio *' : 'Codigo do Acessorio'}</label><input type="text" id="codAcessorio-${acessorioCount}" placeholder="${isOrcamento ? 'Ex: CAPINHA TRANSPARENTE' : 'Ex: AC001'}" oninput="${isOrcamento ? 'this.value=this.value.toUpperCase();' : 'this.value=this.value.toUpperCase();'}calcularResumo()"></div>
                         <div class="form-group"><label>Quantidade</label><input type="number" id="qtdAcessorio-${acessorioCount}" min="1" value="1" oninput="calcularResumo()"></div>
                         <div class="form-group"><label>${isOrcamento ? 'Valor Unitario (R$) *' : 'Valor Exibido (R$)'}</label><input type="number" id="precoAcessorio-${acessorioCount}" min="0" step="0.01" placeholder="0.00" oninput="calcularResumo()"></div>
                     </div>
                 </div>`;
             document.getElementById('acessoriosContainer').insertAdjacentHTML('beforeend', html);
         }
+
+        function setTipoAcessorio(idx, tipo) {
+            document.getElementById('tipoAcessorio-' + idx).value = tipo;
+            const btnBrinde = document.getElementById('btnBrinde-' + idx);
+            const btnVenda = document.getElementById('btnVendaAc-' + idx);
+            if (tipo === 'brinde') {
+                btnBrinde.style.background = '#9b59b6'; btnBrinde.style.borderColor = '#9b59b6'; btnBrinde.style.color = '#fff';
+                btnVenda.style.background = '#0f172a'; btnVenda.style.borderColor = '#475569'; btnVenda.style.color = '#cbd5e1';
+            } else {
+                btnVenda.style.background = '#27ae60'; btnVenda.style.borderColor = '#27ae60'; btnVenda.style.color = '#fff';
+                btnBrinde.style.background = '#0f172a'; btnBrinde.style.borderColor = '#475569'; btnBrinde.style.color = '#cbd5e1';
+            }
+            calcularResumo();
+        }
         function removerAcessorio(i) { document.getElementById(`acessorio-${i}`)?.remove(); calcularResumo(); }
 
+        // ---- PAGAMENTOS (modo VENDA) ----
         function adicionarPagamento() {
             pagamentoCount++;
             const idx = pagamentoCount;
@@ -333,17 +410,53 @@
             calcularResumo();
         }
 
+        // ---- ORCAMENTO PAGAMENTO FLEXIVEL ----
+        function adicionarOrcPagamento() {
+            orcPagCount++;
+            const idx = orcPagCount;
+            const html = `
+                <div class="pagamento-card" id="orcPag-${idx}" data-index="${idx}" style="border-color:#f39c12;">
+                    <div class="pagamento-header">
+                        <span class="pagamento-title" style="color:#f39c12;">Condição #${idx}</span>
+                        ${idx > 1 ? `<button type="button" class="btn-remove" onclick="removerOrcPag(${idx})">x</button>` : ''}
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group"><label>Forma de Pagamento *</label><input type="text" id="orcForma-${idx}" placeholder="Ex: 3X no Cartão" oninput="calcularResumo()"></div>
+                        <div class="form-group"><label>Valor Total (R$) *</label><input type="number" id="orcValor-${idx}" min="0" step="0.01" placeholder="0.00" oninput="calcularResumo()"></div>
+                    </div>
+                    <div class="form-group"><label>Detalhes (opcional)</label><input type="text" id="orcDetalhe-${idx}" placeholder="Ex: Taxa de 5% inclusa" oninput="calcularResumo()"></div>
+                </div>`;
+            document.getElementById('orcPagContainer').insertAdjacentHTML('beforeend', html);
+            calcularResumo();
+        }
+        function removerOrcPag(i) { document.getElementById(`orcPag-${i}`)?.remove(); calcularResumo(); }
+
+        // ---- RESUMO ----
         function calcularResumo() {
             const content = document.getElementById('resumoContent');
             let html = '';
-            let totalPrecoBase = 0, totalCobrado = 0, taxaTotal = 0, trocaTotal = 0;
-            const aparelhosHtml = [], acessoriosHtml = [], pagHtml = [], trocaHtml = [];
+            let totalPrecoBase = 0, totalCobrado = 0, taxaTotal = 0, trocaTotal = 0, totalAcessoriosVenda = 0;
+            const aparelhosHtml = [], acessoriosBrindeHtml = [], acessoriosVendaHtml = [], pagHtml = [], trocaHtml = [];
+
+            const isOrcamento = tipoOperacao === 'ORCAMENTO';
 
             document.querySelectorAll('[id^="aparelho-"]').forEach(card => {
                 const i = card.dataset.index;
-                const cod = document.getElementById(`codAparelho-${i}`)?.value?.trim() || '';
-                const preco = parseFloat(document.getElementById(`precoAparelho-${i}`)?.value) || 0;
-                if (cod && preco > 0) { totalPrecoBase += preco; aparelhosHtml.push(`<div class="resumo-item"><span>${cod}</span><span>R$ ${preco.toFixed(2)}</span></div>`); }
+                if (isOrcamento) {
+                    const desc = document.getElementById(`descAparelho-${i}`)?.value?.trim() || '';
+                    const preco = parseFloat(document.getElementById(`precoAparelho-${i}`)?.value) || 0;
+                    const qtd = parseInt(document.getElementById(`qtdAparelho-${i}`)?.value) || 1;
+                    const desconto = parseFloat(document.getElementById(`descontoAparelho-${i}`)?.value) || 0;
+                    const total = (preco * qtd) - desconto;
+                    if (desc && preco > 0) {
+                        totalPrecoBase += total;
+                        aparelhosHtml.push(`<div class="resumo-item"><span>${desc} (${qtd}x)</span><span>R$ ${total.toFixed(2)}</span></div>`);
+                    }
+                } else {
+                    const cod = document.getElementById(`codAparelho-${i}`)?.value?.trim() || '';
+                    const preco = parseFloat(document.getElementById(`precoAparelho-${i}`)?.value) || 0;
+                    if (cod && preco > 0) { totalPrecoBase += preco; aparelhosHtml.push(`<div class="resumo-item"><span>${cod}</span><span>R$ ${preco.toFixed(2)}</span></div>`); }
+                }
             });
 
             document.querySelectorAll('[id^="acessorio-"]').forEach(card => {
@@ -351,54 +464,90 @@
                 const cod = document.getElementById(`codAcessorio-${i}`)?.value?.trim() || '';
                 const qtd = parseInt(document.getElementById(`qtdAcessorio-${i}`)?.value) || 1;
                 const preco = parseFloat(document.getElementById(`precoAcessorio-${i}`)?.value) || 0;
+                const tipo = document.getElementById(`tipoAcessorio-${i}`)?.value || 'brinde';
                 if (cod) {
-                    const precoText = preco > 0 ? `R$ ${preco.toFixed(2)} (brinde)` : 'brinde';
-                    acessoriosHtml.push(`<div class="resumo-item"><span class="label">${cod} (${qtd}x)</span><span>${precoText}</span></div>`);
+                    if (tipo === 'venda' && !isOrcamento) {
+                        const subtotal = preco * qtd;
+                        totalAcessoriosVenda += subtotal;
+                        acessoriosVendaHtml.push(`<div class="resumo-item"><span class="label">${cod} (${qtd}x) - VENDA</span><span>R$ ${subtotal.toFixed(2)}</span></div>`);
+                    } else {
+                        if (isOrcamento) {
+                            const subtotal = preco * qtd;
+                            totalPrecoBase += subtotal;
+                            acessoriosBrindeHtml.push(`<div class="resumo-item"><span class="label">${cod} (${qtd}x)</span><span>R$ ${subtotal.toFixed(2)}</span></div>`);
+                        } else {
+                            const precoText = preco > 0 ? `R$ ${preco.toFixed(2)} (brinde)` : 'brinde';
+                            acessoriosBrindeHtml.push(`<div class="resumo-item"><span class="label">${cod} (${qtd}x)</span><span>${precoText}</span></div>`);
+                        }
+                    }
                 }
             });
 
-            document.querySelectorAll('[id^="pagamento-"]').forEach(card => {
-                const i = card.dataset.index;
-                const forma = document.getElementById(`forma-${i}`)?.value;
-                if (!forma) return;
-                const infoEl = document.getElementById(`taxaInfo-${i}`);
+            if (!isOrcamento) {
+                document.querySelectorAll('[id^="pagamento-"]').forEach(card => {
+                    const i = card.dataset.index;
+                    const forma = document.getElementById(`forma-${i}`)?.value;
+                    if (!forma) return;
+                    const infoEl = document.getElementById(`taxaInfo-${i}`);
 
-                if (forma === 'TROCA') {
-                    const tp = parseFloat(document.getElementById(`trocaPreco-${i}`)?.value) || 0;
-                    const tm = document.getElementById(`trocaMarca-${i}`)?.value || '';
-                    const tmod = document.getElementById(`trocaModelo-${i}`)?.value || '';
-                    trocaTotal += tp;
-                    if (tp > 0) { trocaHtml.push(`<div class="resumo-item"><span class="label">${tm} ${tmod}</span><span>R$ ${tp.toFixed(2)}</span></div>`); pagHtml.push(`<div class="resumo-item"><span>TROCA</span><span>R$ ${tp.toFixed(2)}</span></div>`); }
-                    if (infoEl) infoEl.style.display = 'none';
-                } else {
-                    const vb = parseFloat(document.getElementById(`valorBase-${i}`)?.value) || 0;
-                    const p = document.getElementById(`parcelas-${i}`)?.value;
-                    const pct = getTaxaPercent(forma, p);
-                    const tv = vb * (pct / 100);
-                    const vr = vb - tv;
-                    taxaTotal += tv; totalCobrado += vb;
-                    if (infoEl && vb > 0) {
-                        infoEl.style.display = 'block';
-                        if (pct > 0) { infoEl.className = 'taxa-info'; const pt = forma === 'Credito' ? ` ${p}x` : ''; infoEl.innerHTML = `<strong>${forma}${pt}</strong>: R$ ${vb.toFixed(2)} - ${pct}% = <strong>R$ ${vr.toFixed(2)}</strong> recebido` + (forma === 'Credito' ? ` (${p}x de R$ ${(vb/parseInt(p)).toFixed(2)} p/ cliente)` : ''); }
-                        else { infoEl.className = 'taxa-info green'; infoEl.innerHTML = `<strong>${forma}</strong>: R$ ${vb.toFixed(2)} (sem taxa)`; }
-                    } else if (infoEl) infoEl.style.display = 'none';
-                    if (vb > 0) { const lb = forma === 'Credito' ? `Credito ${p}x` : forma; pagHtml.push(`<div class="resumo-item"><span>${lb}: R$ ${vb.toFixed(2)} - taxa</span><span>R$ ${vb.toFixed(2)}</span></div>`); }
-                }
-            });
+                    if (forma === 'TROCA') {
+                        const tp = parseFloat(document.getElementById(`trocaPreco-${i}`)?.value) || 0;
+                        const tm = document.getElementById(`trocaMarca-${i}`)?.value || '';
+                        const tmod = document.getElementById(`trocaModelo-${i}`)?.value || '';
+                        trocaTotal += tp;
+                        if (tp > 0) { trocaHtml.push(`<div class="resumo-item"><span class="label">${tm} ${tmod}</span><span>R$ ${tp.toFixed(2)}</span></div>`); pagHtml.push(`<div class="resumo-item"><span>TROCA</span><span>R$ ${tp.toFixed(2)}</span></div>`); }
+                        if (infoEl) infoEl.style.display = 'none';
+                    } else {
+                        const vb = parseFloat(document.getElementById(`valorBase-${i}`)?.value) || 0;
+                        const p = document.getElementById(`parcelas-${i}`)?.value;
+                        const pct = getTaxaPercent(forma, p);
+                        const tv = vb * (pct / 100);
+                        const vr = vb - tv;
+                        taxaTotal += tv; totalCobrado += vb;
+                        if (infoEl && vb > 0) {
+                            infoEl.style.display = 'block';
+                            if (pct > 0) { infoEl.className = 'taxa-info'; const pt = forma === 'Credito' ? ` ${p}x` : ''; infoEl.innerHTML = `<strong>${forma}${pt}</strong>: R$ ${vb.toFixed(2)} - ${pct}% = <strong>R$ ${vr.toFixed(2)}</strong> recebido` + (forma === 'Credito' ? ` (${p}x de R$ ${(vb/parseInt(p)).toFixed(2)} p/ cliente)` : ''); }
+                            else { infoEl.className = 'taxa-info green'; infoEl.innerHTML = `<strong>${forma}</strong>: R$ ${vb.toFixed(2)} (sem taxa)`; }
+                        } else if (infoEl) infoEl.style.display = 'none';
+                        if (vb > 0) { const lb = forma === 'Credito' ? `Credito ${p}x` : forma; pagHtml.push(`<div class="resumo-item"><span>${lb}</span><span>R$ ${vb.toFixed(2)}</span></div>`); }
+                    }
+                });
+            }
 
-            const tg = totalCobrado + trocaTotal;
-            if (aparelhosHtml.length > 0 || pagHtml.length > 0) {
-                html += `<div class="resumo-section"><div class="resumo-section-title">Aparelhos</div>${aparelhosHtml.join('')}</div>`;
-                if (acessoriosHtml.length) html += `<div class="resumo-section"><div class="resumo-section-title">Acessorios</div>${acessoriosHtml.join('')}</div>`;
-                html += `<div class="resumo-section"><div class="resumo-section-title">Pagamento</div>${pagHtml.join('')}</div>`;
+            // Orçamento payments
+            const orcPagHtml = [];
+            if (isOrcamento) {
+                document.querySelectorAll('[id^="orcPag-"]').forEach(card => {
+                    const i = card.dataset.index;
+                    const forma = document.getElementById(`orcForma-${i}`)?.value?.trim() || '';
+                    const valor = parseFloat(document.getElementById(`orcValor-${i}`)?.value) || 0;
+                    const detalhe = document.getElementById(`orcDetalhe-${i}`)?.value?.trim() || '';
+                    if (forma && valor > 0) {
+                        orcPagHtml.push(`<div class="resumo-item"><span>${forma}${detalhe ? ' (' + detalhe + ')' : ''}</span><span>R$ ${valor.toFixed(2)}</span></div>`);
+                    }
+                });
+            }
+
+            const tg = isOrcamento ? totalPrecoBase : (totalCobrado + trocaTotal + totalAcessoriosVenda);
+            if (aparelhosHtml.length > 0 || pagHtml.length > 0 || orcPagHtml.length > 0) {
+                html += `<div class="resumo-section"><div class="resumo-section-title">${isOrcamento ? 'Itens' : 'Aparelhos'}</div>${aparelhosHtml.join('')}</div>`;
+                if (acessoriosBrindeHtml.length) html += `<div class="resumo-section"><div class="resumo-section-title">${isOrcamento ? 'Acessorios' : 'Acessorios Brinde'}</div>${acessoriosBrindeHtml.join('')}</div>`;
+                if (acessoriosVendaHtml.length) html += `<div class="resumo-section"><div class="resumo-section-title">Acessorios Venda</div>${acessoriosVendaHtml.join('')}</div>`;
+                if (pagHtml.length) html += `<div class="resumo-section"><div class="resumo-section-title">Pagamento</div>${pagHtml.join('')}</div>`;
+                if (orcPagHtml.length) html += `<div class="resumo-section"><div class="resumo-section-title">Condições de Pagamento</div>${orcPagHtml.join('')}</div>`;
                 if (trocaHtml.length) html += `<div class="resumo-section"><div class="resumo-section-title">Troca</div>${trocaHtml.join('')}</div>`;
-                html += `<div class="resumo-total"><span>TOTAL COBRADO:</span><span>R$ ${tg.toFixed(2)}</span></div>`;
-                if (taxaTotal > 0) html += `<div class="resumo-taxas">Taxa total: -R$ ${taxaTotal.toFixed(2)}</div>`;
+                if (!isOrcamento) {
+                    html += `<div class="resumo-total"><span>TOTAL COBRADO:</span><span>R$ ${tg.toFixed(2)}</span></div>`;
+                    if (taxaTotal > 0) html += `<div class="resumo-taxas">Taxa total: -R$ ${taxaTotal.toFixed(2)}</div>`;
+                } else {
+                    html += `<div class="resumo-total"><span>VALOR BASE DOS ITENS:</span><span>R$ ${totalPrecoBase.toFixed(2)}</span></div>`;
+                }
                 document.getElementById('resumo').style.display = 'block';
                 content.innerHTML = html;
             } else { document.getElementById('resumo').style.display = 'none'; }
         }
 
+        // ---- SUBMIT ----
         document.getElementById('formVenda').addEventListener('submit', async function(e) {
             e.preventDefault();
 
@@ -413,14 +562,26 @@
                 estado: document.getElementById('clienteEstado').value
             };
 
+            const isOrcamento = tipoOperacao === 'ORCAMENTO';
+
             const aparelhos = [];
             document.querySelectorAll('[id^="aparelho-"]').forEach(card => {
                 const i = card.dataset.index;
-                const cod = document.getElementById(`codAparelho-${i}`)?.value?.trim().toUpperCase();
-                const preco = parseFloat(document.getElementById(`precoAparelho-${i}`)?.value) || 0;
-                if (cod && preco > 0) aparelhos.push({ codigo: cod, precoVenda: preco });
+                if (isOrcamento) {
+                    const desc = document.getElementById(`descAparelho-${i}`)?.value?.trim().toUpperCase();
+                    const preco = parseFloat(document.getElementById(`precoAparelho-${i}`)?.value) || 0;
+                    const qtd = parseInt(document.getElementById(`qtdAparelho-${i}`)?.value) || 1;
+                    const desconto = parseFloat(document.getElementById(`descontoAparelho-${i}`)?.value) || 0;
+                    const condicao = document.getElementById(`condicao-${i}`)?.value || 'novo';
+                    if (desc && preco > 0) aparelhos.push({ descricao: desc, precoVenda: preco, quantidade: qtd, desconto, condicao, isOrcamentoLivre: true });
+                } else {
+                    const cod = document.getElementById(`codAparelho-${i}`)?.value?.trim().toUpperCase();
+                    const preco = parseFloat(document.getElementById(`precoAparelho-${i}`)?.value) || 0;
+                    const condicao = document.getElementById(`condicao-${i}`)?.value || 'novo';
+                    if (cod && preco > 0) aparelhos.push({ codigo: cod, precoVenda: preco, condicao });
+                }
             });
-            if (aparelhos.length === 0) { alert('Adicione pelo menos um aparelho'); return; }
+            if (aparelhos.length === 0) { alert('Adicione pelo menos um aparelho/item'); return; }
 
             const acessorios = [];
             document.querySelectorAll('[id^="acessorio-"]').forEach(card => {
@@ -428,58 +589,63 @@
                 const cod = document.getElementById(`codAcessorio-${i}`)?.value?.trim().toUpperCase();
                 const qtd = parseInt(document.getElementById(`qtdAcessorio-${i}`)?.value) || 1;
                 const precoVenda = parseFloat(document.getElementById(`precoAcessorio-${i}`)?.value) || 0;
-                if (cod) acessorios.push({ codigo: cod, quantidade: qtd, precoVenda: precoVenda });
+                const modalidade = document.getElementById(`tipoAcessorio-${i}`)?.value || 'brinde';
+                if (cod) acessorios.push({ codigo: cod, quantidade: qtd, precoVenda, modalidade });
             });
 
-            const pagamentos = [], trocas = [];
+            let pagamentos = [], trocas = [];
             let temPag = false;
-            try {
-                document.querySelectorAll('[id^="pagamento-"]').forEach(card => {
-                    const i = card.dataset.index;
-                    const forma = document.getElementById(`forma-${i}`)?.value;
-                    if (!forma) return;
-                    if (forma === 'TROCA') {
-                        const m = document.getElementById(`trocaMarca-${i}`)?.value;
-                        const mod = document.getElementById(`trocaModelo-${i}`)?.value;
-                        const cap = document.getElementById(`trocaCapacidade-${i}`)?.value;
-                        const cor = document.getElementById(`trocaCor-${i}`)?.value;
-                        const cod = document.getElementById(`trocaCodigo-${i}`)?.value?.trim().toUpperCase() || '';
-                        const pr = parseFloat(document.getElementById(`trocaPreco-${i}`)?.value) || 0;
-                        const obs = document.getElementById(`trocaObs-${i}`)?.value || '';
-                        if (!m || !mod || !cap || !cor || pr <= 0) { alert(`Pagamento #${i}: Preencha troca`); throw 'v'; }
-                        trocas.push({ marca: m, modelo: mod, capacidade: cap, cor, codigo: cod, preco: pr, observacao: obs });
-                        pagamentos.push({ forma: 'TROCA', valorBase: pr, taxaPct: 0, taxaValor: 0, totalCobrado: pr, parcelas: '' });
-                        temPag = true;
-                    } else {
-                        const vb = parseFloat(document.getElementById(`valorBase-${i}`)?.value) || 0;
-                        const p = forma === 'Credito' ? document.getElementById(`parcelas-${i}`)?.value : '';
-                        if (vb <= 0) return;
-                        if (forma === 'Credito' && !p) { alert(`Pagamento #${i}: Parcelas`); throw 'v'; }
-                        const pct = getTaxaPercent(forma, p);
-                        const tv = Math.round(vb * (pct / 100) * 100) / 100;
-                        pagamentos.push({ forma, parcelas: p || '', valorBase: vb, taxaPct: pct, taxaValor: tv, totalCobrado: vb });
-                        temPag = true;
-                    }
-                });
-            } catch(x) { return; }
-            if (!temPag) { alert('Adicione pagamento'); return; }
 
-            // Collect aparelhos with condicao
-            aparelhos.forEach((ap, idx) => {
-                const cards = document.querySelectorAll('[id^="aparelho-"]');
-                const card = Array.from(cards).find(c => {
-                    const ci = c.dataset.index;
-                    return document.getElementById('codAparelho-' + ci)?.value?.trim().toUpperCase() === ap.codigo;
-                });
-                if (card) {
-                    const ci = card.dataset.index;
-                    ap.condicao = document.getElementById('condicao-' + ci)?.value || 'novo';
-                    if (tipoOperacao === 'ORCAMENTO') {
-                        ap.quantidade = parseInt(document.getElementById('qtdAparelho-' + ci)?.value) || 1;
-                        ap.desconto = parseFloat(document.getElementById('descontoAparelho-' + ci)?.value) || 0;
+            if (isOrcamento) {
+                // Pagamento flexível do orçamento
+                const orcPagamentos = [];
+                document.querySelectorAll('[id^="orcPag-"]').forEach(card => {
+                    const i = card.dataset.index;
+                    const forma = document.getElementById(`orcForma-${i}`)?.value?.trim();
+                    const valor = parseFloat(document.getElementById(`orcValor-${i}`)?.value) || 0;
+                    const detalhe = document.getElementById(`orcDetalhe-${i}`)?.value?.trim() || '';
+                    if (forma && valor > 0) {
+                        orcPagamentos.push({ forma, valor, detalhe });
+                        temPag = true;
                     }
+                });
+                pagamentos = orcPagamentos;
+                if (!temPag) {
+                    // Orçamento pode não ter pagamento definido - OK
+                    temPag = true;
                 }
-            });
+            } else {
+                try {
+                    document.querySelectorAll('[id^="pagamento-"]').forEach(card => {
+                        const i = card.dataset.index;
+                        const forma = document.getElementById(`forma-${i}`)?.value;
+                        if (!forma) return;
+                        if (forma === 'TROCA') {
+                            const m = document.getElementById(`trocaMarca-${i}`)?.value;
+                            const mod = document.getElementById(`trocaModelo-${i}`)?.value;
+                            const cap = document.getElementById(`trocaCapacidade-${i}`)?.value;
+                            const cor = document.getElementById(`trocaCor-${i}`)?.value;
+                            const cod = document.getElementById(`trocaCodigo-${i}`)?.value?.trim().toUpperCase() || '';
+                            const pr = parseFloat(document.getElementById(`trocaPreco-${i}`)?.value) || 0;
+                            const obs = document.getElementById(`trocaObs-${i}`)?.value || '';
+                            if (!m || !mod || !cap || !cor || pr <= 0) { alert(`Pagamento #${i}: Preencha troca`); throw 'v'; }
+                            trocas.push({ marca: m, modelo: mod, capacidade: cap, cor, codigo: cod, preco: pr, observacao: obs });
+                            pagamentos.push({ forma: 'TROCA', valorBase: pr, taxaPct: 0, taxaValor: 0, totalCobrado: pr, parcelas: '' });
+                            temPag = true;
+                        } else {
+                            const vb = parseFloat(document.getElementById(`valorBase-${i}`)?.value) || 0;
+                            const p = forma === 'Credito' ? document.getElementById(`parcelas-${i}`)?.value : '';
+                            if (vb <= 0) return;
+                            if (forma === 'Credito' && !p) { alert(`Pagamento #${i}: Parcelas`); throw 'v'; }
+                            const pct = getTaxaPercent(forma, p);
+                            const tv = Math.round(vb * (pct / 100) * 100) / 100;
+                            pagamentos.push({ forma, parcelas: p || '', valorBase: vb, taxaPct: pct, taxaValor: tv, totalCobrado: vb });
+                            temPag = true;
+                        }
+                    });
+                } catch(x) { return; }
+                if (!temPag) { alert('Adicione pagamento'); return; }
+            }
 
             const payload = {
                 tipoOperacao: tipoOperacao,
@@ -498,15 +664,17 @@
                 const response = await fetch(WEBHOOK_URL, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
                 const result = await response.json();
                 if (response.ok && result.success) {
-                    let msg = result.message || 'Venda registrada!';
+                    let msg = result.message || 'Registrado com sucesso!';
                     if (result.pdfLink) msg += ` <a href="${result.pdfLink}" target="_blank">Abrir PDF</a>`;
                     document.getElementById('alertSuccess').style.display = 'block';
                     document.getElementById('alertSuccess').innerHTML = msg;
                     document.getElementById('aparelhosContainer').innerHTML = '';
                     document.getElementById('acessoriosContainer').innerHTML = '';
                     document.getElementById('pagamentosContainer').innerHTML = '';
-                    aparelhoCount = 0; acessorioCount = 0; pagamentoCount = 0;
-                    adicionarAparelho(); adicionarPagamento();
+                    document.getElementById('orcPagContainer').innerHTML = '';
+                    aparelhoCount = 0; acessorioCount = 0; pagamentoCount = 0; orcPagCount = 0;
+                    adicionarAparelho();
+                    if (tipoOperacao === 'VENDA') adicionarPagamento();
                     document.getElementById('resumo').style.display = 'none';
                     window.scrollTo({ top: 0, behavior: 'smooth' });
                 } else { throw new Error(result.error || result.message || 'Erro'); }
