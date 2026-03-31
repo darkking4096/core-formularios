@@ -579,7 +579,6 @@
                     if (cod && preco > 0) aparelhos.push({ codigo: cod, precoVenda: preco, condicao });
                 }
             });
-            if (aparelhos.length === 0) { alert('Adicione pelo menos um aparelho/item'); return; }
 
             const acessorios = [];
             document.querySelectorAll('[id^="acessorio-"]').forEach(card => {
@@ -590,6 +589,7 @@
                 const modalidade = document.getElementById(`tipoAcessorio-${i}`)?.value || 'brinde';
                 if (cod) acessorios.push({ codigo: cod, quantidade: qtd, precoVenda, modalidade });
             });
+            if (aparelhos.length === 0 && acessorios.length === 0) { alert('Adicione pelo menos um aparelho ou acessório'); return; }
 
             let pagamentos = [], trocas = [];
             let temPag = false;
